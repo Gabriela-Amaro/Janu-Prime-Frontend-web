@@ -1,0 +1,26 @@
+{
+  "name": "januprime-web",
+  "version": "1.0.0",
+  "description": "Janu Prime - Plataforma de Fidelização",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  },
+  "keywords": [
+    "fidelização",
+    "pontos",
+    "estabelecimento",
+    "januprime"
+  ],
+  "author": "Janu Prime Team",
+  "license": "MIT"
+}
