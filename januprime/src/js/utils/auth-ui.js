@@ -1,19 +1,16 @@
 // Utilitários para controlar a interface baseada na autenticação
 export function updateUIBasedOnAuth() {
   const navbar = document.getElementById('mainNavbar');
-  const footer = document.querySelector('footer');
   
   if (authService.isAuthenticated) {
-    // Mostrar navegação e footer
+    // Mostrar navegação
     if (navbar) navbar.style.display = 'block';
-    if (footer) footer.style.display = 'block';
     
     // Atualizar informações do usuário na interface
     updateUserInfo();
   } else {
-    // Esconder navegação e footer
+    // Esconder navegação
     if (navbar) navbar.style.display = 'none';
-    if (footer) footer.style.display = 'none';
   }
 }
 
@@ -85,14 +82,11 @@ export function updatePermissionsUI() {
 // Função para mostrar/esconder navegação
 export function toggleNavigation(show) {
   const navbar = document.getElementById('mainNavbar');
-  const footer = document.querySelector('footer');
   
   if (show) {
     if (navbar) navbar.style.display = 'block';
-    if (footer) footer.style.display = 'block';
   } else {
     if (navbar) navbar.style.display = 'none';
-    if (footer) footer.style.display = 'none';
   }
 }
 

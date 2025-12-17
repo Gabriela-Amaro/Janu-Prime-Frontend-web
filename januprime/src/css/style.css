@@ -11,7 +11,7 @@
   --primary-light: #818cf8;
   --secondary-color: #64748b;
   --accent-color: #f59e0b;
-  
+
   /* Cores de status */
   --success-color: #10b981;
   --success-light: #34d399;
@@ -21,7 +21,7 @@
   --warning-light: #fbbf24;
   --info-color: #06b6d4;
   --info-light: #22d3ee;
-  
+
   /* Cores neutras */
   --light-color: #f8fafc;
   --light-gray: #e2e8f0;
@@ -31,7 +31,7 @@
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-muted: #94a3b8;
-  
+
   /* Gradientes */
   --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --gradient-secondary: linear-gradient(135deg, #64748b 0%, #475569 100%);
@@ -39,18 +39,18 @@
   --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  
+
   /* Sombras */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
+
   /* Bordas */
   --border-radius: 0.75rem;
   --border-radius-sm: 0.5rem;
   --border-radius-lg: 1rem;
-  
+
   /* Transições */
   --transition-fast: 0.15s ease-in-out;
   --transition-normal: 0.3s ease-in-out;
@@ -67,7 +67,12 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   line-height: 1.3;
@@ -129,6 +134,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -140,6 +146,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -151,6 +158,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -162,6 +170,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -173,6 +182,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -188,9 +198,11 @@ h1, h2, h3, h4, h5, h6 {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
   }
@@ -207,6 +219,7 @@ h1, h2, h3, h4, h5, h6 {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -468,7 +481,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .navbar .dropdown-toggle::after {
-  display: none; /* Escondemos o ícone padrão do Bootstrap */
+  display: none;
+  /* Escondemos o ícone padrão do Bootstrap */
 }
 
 /* Estilos para o ícone de dropdown personalizado na navegação */
@@ -517,7 +531,7 @@ h1, h2, h3, h4, h5, h6 {
   background-image: none;
 }
 
-.dropdown .form-select:focus + .dropdown-icon {
+.dropdown .form-select:focus+.dropdown-icon {
   color: var(--primary-color);
 }
 
@@ -530,7 +544,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #94a3b8;
 }
 
-.modal .dropdown .form-select:focus + .dropdown-icon {
+.modal .dropdown .form-select:focus+.dropdown-icon {
   color: var(--primary-color);
 }
 
@@ -543,7 +557,7 @@ h1, h2, h3, h4, h5, h6 {
   padding-right: 2rem;
 }
 
-.dropdown .form-select-sm + .dropdown-icon {
+.dropdown .form-select-sm+.dropdown-icon {
   right: 0.5rem;
   font-size: 0.7rem;
 }
@@ -889,7 +903,7 @@ textarea.form-control::placeholder {
     padding-left: 15px;
     padding-right: 15px;
   }
-  
+
   .card-body {
     padding: 1rem;
   }
@@ -967,7 +981,12 @@ footer {
 }
 
 /* Melhorias na tipografia */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
 }
 
@@ -1063,7 +1082,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Estilos para inputs */
-.input-group-sm > .form-control {
+.input-group-sm>.form-control {
   font-size: 0.875rem;
 }
 
@@ -1398,8 +1417,13 @@ hr {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Estilos para mensagens de erro */
@@ -1470,7 +1494,12 @@ hr {
   color: #e2e8f0 !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: #ffffff !important;
 }
 
@@ -1617,7 +1646,8 @@ label {
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden; /* Previne scroll horizontal */
+  overflow-x: hidden;
+  /* Previne scroll horizontal */
 }
 
 /* Garantir que não haja overflow horizontal */
@@ -1663,11 +1693,13 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rem 1rem 8rem 1rem; /* Mais espaçamento no topo e muito mais no rodapé */
+  padding: 6rem 1rem 8rem 1rem;
+  /* Mais espaçamento no topo e muito mais no rodapé */
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden; /* Previne overflow horizontal */
+  overflow-x: hidden;
+  /* Previne overflow horizontal */
 }
 
 /* Estilos para cards de autenticação */
@@ -1698,24 +1730,24 @@ html {
     padding: 4rem 0.5rem 6rem 0.5rem;
     min-height: 70vh;
   }
-  
+
   .auth-card {
     max-width: 100%;
     margin: 0;
   }
-  
+
   .auth-card .card-body {
     padding: 1.5rem;
   }
-  
+
   .auth-footer .row {
     text-align: center;
   }
-  
+
   .auth-footer .col-md-6:last-child {
     margin-top: 1rem;
   }
-  
+
   .auth-footer .container-fluid {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -1727,11 +1759,11 @@ html {
     padding: 3rem 0.5rem 5rem 0.5rem;
     min-height: 60vh;
   }
-  
+
   .auth-card .card-body {
     padding: 1rem;
   }
-  
+
   .auth-footer .container-fluid {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -1748,6 +1780,7 @@ html {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1941,11 +1974,11 @@ html {
   .main-footer .row {
     text-align: center;
   }
-  
+
   .social-links {
     justify-content: center;
   }
-  
+
   .footer-legal-links {
     text-align: center !important;
     margin-top: 1rem;
@@ -1956,20 +1989,20 @@ html {
   .main-footer {
     padding: 2rem 0;
   }
-  
+
   .main-footer .row:first-child {
     padding: 2rem 0;
   }
-  
+
   .footer-brand {
     text-align: center;
     margin-bottom: 2rem;
   }
-  
+
   .footer-title {
     margin-top: 1.5rem;
   }
-  
+
   .footer-title:first-child {
     margin-top: 0;
   }
@@ -1980,17 +2013,17 @@ html {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .social-links {
     gap: 0.5rem;
   }
-  
+
   .social-link {
     width: 36px;
     height: 36px;
     font-size: 1rem;
   }
-  
+
   .footer-legal-links a {
     display: block;
     margin-bottom: 0.5rem;
@@ -2007,6 +2040,7 @@ html {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -2219,11 +2253,11 @@ html {
   .auth-footer .row {
     text-align: center;
   }
-  
+
   .auth-footer .social-links {
     justify-content: center;
   }
-  
+
   .auth-footer .footer-legal-links {
     text-align: center !important;
     margin-top: 0.75rem;
@@ -2234,20 +2268,20 @@ html {
   .auth-footer {
     padding: 1.5rem 0;
   }
-  
+
   .auth-footer .row:first-child {
     padding: 1.5rem 0;
   }
-  
+
   .auth-footer .footer-brand {
     text-align: center;
     margin-bottom: 1.5rem;
   }
-  
+
   .auth-footer .footer-title {
     margin-top: 1rem;
   }
-  
+
   .auth-footer .footer-title:first-child {
     margin-top: 0;
   }
@@ -2258,17 +2292,17 @@ html {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .auth-footer .social-links {
     gap: 0.4rem;
   }
-  
+
   .auth-footer .social-link {
     width: 28px;
     height: 28px;
     font-size: 0.8rem;
   }
-  
+
   .auth-footer .footer-legal-links a {
     display: block;
     margin-bottom: 0.3rem;
