@@ -4,11 +4,15 @@ import { showNotification } from "../utils/notifications.js";
 import { getMainFooter } from "../components/main-footer.js";
 import { ticketsService } from "../services/tickets.js";
 import { produtosService } from "../services/produtos.js";
+import { estabelecimentosService } from "../services/estabelecimentos.js";
+import { anunciosService } from "../services/anuncios.js";
+import { administradoresService } from "../services/administradores.js";
 
 // Estado global da aplicação
 let currentPage = "dashboard";
 let ticketsPendentes = [];
 let produtosAtivos = [];
+let dadosEstabelecimento = null;
 
 // Função para obter dados do usuário logado
 function getUserData() {
@@ -22,37 +26,96 @@ function getUserData() {
 }
 
 /**
+ * Carrega dados do estabelecimento da API
+ */
+async function carregarDadosEstabelecimento() {
+  try {
+    dadosEstabelecimento = await estabelecimentosService.obterMeuEstabelecimento();
+    atualizarPerfilEmpresaUI();
+  } catch (error) {
+    console.error("Erro ao carregar dados do estabelecimento:", error);
+    // Não mostrar erro para o usuário, apenas usar dados padrão
+  }
+}
+
+/**
+ * Atualiza a UI do perfil da empresa no dashboard
+ */
+function atualizarPerfilEmpresaUI() {
+  if (!dadosEstabelecimento) return;
+
+  // Atualizar nome do estabelecimento
+  const nomeElement = document.getElementById("dashboard-nome-estabelecimento");
+  if (nomeElement) {
+    nomeElement.textContent = dadosEstabelecimento.nome || "Seu Estabelecimento";
+  }
+
+  // Atualizar endereço
+  const enderecoElement = document.getElementById("dashboard-endereco-estabelecimento");
+  if (enderecoElement) {
+    enderecoElement.textContent = dadosEstabelecimento.endereco || "Endereço não cadastrado";
+  }
+
+  // Atualizar telefone
+  const telefoneElement = document.getElementById("dashboard-telefone-estabelecimento");
+  if (telefoneElement) {
+    telefoneElement.textContent = dadosEstabelecimento.telefone || "-";
+  }
+
+  // Atualizar status
+  const statusElement = document.getElementById("dashboard-status-estabelecimento");
+  if (statusElement) {
+    const statusBadge = statusElement.querySelector(".badge");
+    if (statusBadge) {
+      if (dadosEstabelecimento.ativo) {
+        statusBadge.textContent = "Ativo";
+        statusBadge.className = "badge bg-success";
+      } else {
+        statusBadge.textContent = "Inativo";
+        statusBadge.className = "badge bg-secondary";
+      }
+    }
+  }
+}
+
+/**
  * Carrega dados reais da API
  */
 async function carregarDadosDashboard() {
   try {
-    // Carregar tickets (a API não filtra por status, filtramos localmente)
-    const responseDebito = await ticketsService.listarDebito();
-    const responseCredito = await ticketsService.listarCredito();
+    // Carregar dados do estabelecimento em paralelo
+    await Promise.all([
+      carregarDadosEstabelecimento(),
+      // Carregar tickets (a API não filtra por status, filtramos localmente)
+      (async () => {
+        const responseDebito = await ticketsService.listarDebito();
+        const responseCredito = await ticketsService.listarCredito();
 
-    // Tratar resposta (pode ser array direto ou objeto paginado com results)
-    const ticketsDebito = Array.isArray(responseDebito)
-      ? responseDebito
-      : responseDebito.results || [];
-    const ticketsCredito = Array.isArray(responseCredito)
-      ? responseCredito
-      : responseCredito.results || [];
+        // Tratar resposta (pode ser array direto ou objeto paginado com results)
+        const ticketsDebito = Array.isArray(responseDebito)
+          ? responseDebito
+          : responseDebito.results || [];
+        const ticketsCredito = Array.isArray(responseCredito)
+          ? responseCredito
+          : responseCredito.results || [];
 
-    // Filtrar apenas tickets com status ABERTO e combinar
-    ticketsPendentes = [
-      ...ticketsDebito
-        .filter((t) => t.status === "ABERTO")
-        .map((t) => ({ ...t, tipo: "debito" })),
-      ...ticketsCredito
-        .filter((t) => t.status === "ABERTO")
-        .map((t) => ({ ...t, tipo: "credito" })),
-    ];
+        // Filtrar apenas tickets com status ABERTO e combinar
+        ticketsPendentes = [
+          ...ticketsDebito
+            .filter((t) => t.status === "ABERTO")
+            .map((t) => ({ ...t, tipo: "debito" })),
+          ...ticketsCredito
+            .filter((t) => t.status === "ABERTO")
+            .map((t) => ({ ...t, tipo: "credito" })),
+        ];
 
-    console.log("Tickets pendentes carregados:", ticketsPendentes.length);
+        console.log("Tickets pendentes carregados:", ticketsPendentes.length);
 
-    // Atualizar UI com tickets
-    atualizarTicketsUI();
-    atualizarContadores();
+        // Atualizar UI com tickets
+        atualizarTicketsUI();
+        atualizarContadores();
+      })(),
+    ]);
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
     showNotification(
@@ -234,7 +297,7 @@ export function getDashboardContent() {
       <!-- Cards de métricas clicáveis -->
       <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-          <div class="card border-left-primary clickable-card" onclick="showPage('transacoes')" style="cursor: pointer;">
+          <div class="card border-left-primary clickable-card" onclick="scrollParaTickets()" style="cursor: pointer;">
             <div class="card-body">
               <div class="row no-gutters align-items-center">
                 <div class="col mr-2">
@@ -338,17 +401,17 @@ export function getDashboardContent() {
             <div class="card-body">
               <div class="row">
                 <div class="col-lg-3 col-md-6 mb-3">
-                  <button class="btn btn-outline-primary w-100" onclick="showPage('catalogo')">
+                  <button class="btn btn-outline-primary w-100" onclick="abrirModalProduto()">
                     <i class="bi bi-plus-circle me-2"></i>Adicionar Produto
                   </button>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
-                  <button class="btn btn-outline-success w-100" onclick="showPage('anuncios')">
+                  <button class="btn btn-outline-success w-100" onclick="abrirModalAnuncio()">
                     <i class="bi bi-megaphone me-2"></i>Criar Anúncio
                   </button>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-3">
-                  <button class="btn btn-outline-info w-100" onclick="showPage('funcionarios')">
+                  <button class="btn btn-outline-info w-100" onclick="abrirModalFuncionario()">
                     <i class="bi bi-person-plus me-2"></i>Adicionar Funcionário
                   </button>
                 </div>
@@ -364,7 +427,7 @@ export function getDashboardContent() {
       </div>
       
       <!-- Seção principal com tickets e sidebar -->
-      <div class="row">
+      <div class="row" id="secao-tickets">
         <!-- Tickets de Débito (Resgates) -->
         <div class="col-lg-4 mb-4">
           <div class="card h-100">
@@ -435,16 +498,16 @@ export function getDashboardContent() {
               <div class="mb-2">
                 <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="50" height="50">
               </div>
-              <h6 class="mb-1 small">${nomeEstabelecimento}</h6>
-              <p class="text-muted small mb-2">endereço</p>
+              <h6 class="mb-1 small" id="dashboard-nome-estabelecimento">${nomeEstabelecimento}</h6>
+              <p class="text-muted small mb-2" id="dashboard-endereco-estabelecimento">Carregando...</p>
               <div class="row text-center">
                 <div class="col-6">
                   <small class="text-muted d-block" style="font-size: 0.7rem;">Telefone</small>
-                  <small class="fw-bold" style="font-size: 0.75rem;">(00)00000-0000</small>
+                  <small class="fw-bold" style="font-size: 0.75rem;" id="dashboard-telefone-estabelecimento">-</small>
                 </div>
-                <div class="col-6">
+                <div class="col-6" id="dashboard-status-estabelecimento">
                   <small class="text-muted d-block" style="font-size: 0.7rem;">Status</small>
-                  <span class="badge bg-success" style="font-size: 0.65rem;">Ativo</span>
+                  <span class="badge bg-success" style="font-size: 0.65rem;">Carregando...</span>
                 </div>
               </div>
             </div>
@@ -1114,8 +1177,459 @@ export function visualizarTicket(id, tipo) {
   modal.show();
 }
 
+/**
+ * Faz scroll suave para a seção de tickets
+ */
+function scrollParaTickets() {
+  const secaoTickets = document.getElementById("secao-tickets");
+  if (secaoTickets) {
+    secaoTickets.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+/**
+ * Abre o modal de produto
+ */
+function abrirModalProduto() {
+  // Limpar formulário
+  const form = document.getElementById("produtoForm");
+  if (form) {
+    form.reset();
+  }
+  
+  // Garantir que o checkbox ativo esteja marcado por padrão
+  const ativoCheckbox = document.getElementById("produtoAtivo");
+  if (ativoCheckbox) {
+    ativoCheckbox.checked = true;
+  }
+  
+  // Atualizar título do modal
+  const modalTitle = document.getElementById("produtoModalLabel");
+  if (modalTitle) {
+    modalTitle.textContent = "Adicionar Produto";
+  }
+  
+  // Abrir modal usando Bootstrap
+  const modalElement = document.getElementById("produtoModal");
+  if (modalElement) {
+    const modal = new window.bootstrap.Modal(modalElement);
+    modal.show();
+  }
+}
+
+/**
+ * Abre o modal de anúncio
+ */
+function abrirModalAnuncio() {
+  // Limpar formulário
+  const form = document.getElementById("anuncioForm");
+  if (form) {
+    form.reset();
+  }
+  
+  // Atualizar título do modal
+  const modalTitle = document.getElementById("anuncioModalLabel");
+  if (modalTitle) {
+    modalTitle.textContent = "Criar Anúncio";
+  }
+  
+  // Abrir modal usando Bootstrap
+  const modalElement = document.getElementById("anuncioModal");
+  if (modalElement) {
+    const modal = new window.bootstrap.Modal(modalElement);
+    modal.show();
+  }
+}
+
+/**
+ * Formata o campo de CPF
+ */
+function formatCPF(input) {
+  let value = input.value.replace(/\D/g, "");
+  value = value.replace(/^(\d{3})(\d)/, "$1.$2");
+  value = value.replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+  value = value.replace(/\.(\d{3})(\d)/, ".$1-$2");
+  input.value = value;
+}
+
+/**
+ * Alterna visibilidade da senha
+ */
+function togglePasswordVisibility(inputId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(inputId + "Icon");
+  
+  if (input && icon) {
+    if (input.type === "password") {
+      input.type = "text";
+      icon.classList.remove("bi-eye");
+      icon.classList.add("bi-eye-slash");
+    } else {
+      input.type = "password";
+      icon.classList.remove("bi-eye-slash");
+      icon.classList.add("bi-eye");
+    }
+  }
+}
+
+/**
+ * Carrega estabelecimentos para o select (apenas para superuser)
+ */
+async function carregarEstabelecimentosParaSelect() {
+  try {
+    const estabelecimentos = await estabelecimentosService.listar();
+    const select = document.getElementById("funcionarioEstabelecimento");
+    
+    if (!select) return;
+    
+    // Limpar opções existentes
+    select.innerHTML = '<option value="">Selecione um estabelecimento</option>';
+    
+    // Adicionar estabelecimentos
+    const estabelecimentosArray = Array.isArray(estabelecimentos) 
+      ? estabelecimentos 
+      : estabelecimentos.results || [];
+    
+    estabelecimentosArray.forEach((estabelecimento) => {
+      const option = document.createElement("option");
+      option.value = estabelecimento.id;
+      option.textContent = estabelecimento.nome;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Erro ao carregar estabelecimentos:", error);
+  }
+}
+
+/**
+ * Abre o modal de funcionário
+ */
+async function abrirModalFuncionario() {
+  // Limpar formulário
+  const form = document.getElementById("funcionarioForm");
+  if (form) {
+    form.reset();
+  }
+  
+  // Verificar se o usuário pode escolher estabelecimento
+  // Apenas superuser da plataforma (Django is_superuser) pode escolher
+  // Por enquanto, vamos tentar carregar estabelecimentos e ver se funciona
+  // Se o usuário não tiver permissão, a API retornará erro
+  const userData = getUserData();
+  
+  // Tentar carregar estabelecimentos - se o usuário for superuser da plataforma,
+  // conseguirá listar todos. Se não, a API retornará apenas o dele
+  const estabelecimentoContainer = document.getElementById("funcionarioEstabelecimentoContainer");
+  if (estabelecimentoContainer) {
+    try {
+      const estabelecimentos = await estabelecimentosService.listar();
+      const estabelecimentosArray = Array.isArray(estabelecimentos) 
+        ? estabelecimentos 
+        : estabelecimentos.results || [];
+      
+      // Se houver mais de um estabelecimento, o usuário pode escolher
+      if (estabelecimentosArray.length > 1) {
+        estabelecimentoContainer.style.display = "block";
+        await carregarEstabelecimentosParaSelect();
+      } else {
+        // Se houver apenas um, ocultar o campo (será usado automaticamente)
+        estabelecimentoContainer.style.display = "none";
+      }
+    } catch (error) {
+      // Se houver erro, ocultar o campo
+      estabelecimentoContainer.style.display = "none";
+    }
+  }
+  
+  // Atualizar título do modal
+  const modalTitle = document.getElementById("funcionarioModalLabel");
+  if (modalTitle) {
+    modalTitle.textContent = "Adicionar Funcionário";
+  }
+  
+  // Abrir modal usando Bootstrap
+  const modalElement = document.getElementById("funcionarioModal");
+  if (modalElement) {
+    const modal = new window.bootstrap.Modal(modalElement);
+    modal.show();
+  }
+}
+
+/**
+ * Formata o campo de preço como moeda brasileira
+ */
+function formatCurrency(input) {
+  // Remove tudo que não é dígito
+  let value = input.value.replace(/\D/g, "");
+  
+  // Se estiver vazio, limpa o campo
+  if (value === "") {
+    input.value = "";
+    return;
+  }
+  
+  // Converte para número e divide por 100 para ter centavos
+  const numberValue = parseFloat(value) / 100;
+  
+  // Formata como moeda brasileira sem símbolo R$ (já tem no input-group)
+  // Formato: 1.234,56
+  const formatted = numberValue.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  
+  input.value = formatted;
+}
+
+/**
+ * Converte valor formatado (1.234,56) para número (1234.56)
+ */
+function parseCurrency(value) {
+  if (!value) return 0;
+  
+  // Remove espaços e pontos (milhares)
+  // Converte vírgula (decimal) para ponto
+  const cleanValue = value
+    .toString()
+    .replace(/\s/g, "")
+    .replace(/\./g, "")  // Remove pontos de milhar
+    .replace(",", ".");  // Converte vírgula para ponto decimal
+  
+  const number = parseFloat(cleanValue);
+  return isNaN(number) ? 0 : number;
+}
+
+/**
+ * Salva um novo produto e navega para a página de catálogo
+ */
+async function salvarProdutoDashboard() {
+  try {
+    const nome = document.getElementById("produtoNome")?.value.trim();
+    const descricao = document.getElementById("produtoDescricao")?.value.trim();
+    const precoInput = document.getElementById("produtoPreco");
+    
+    if (!nome) {
+      showNotification("Nome do produto é obrigatório", "error");
+      return;
+    }
+    
+    if (!precoInput || !precoInput.value) {
+      showNotification("Preço é obrigatório", "error");
+      return;
+    }
+    
+    // Converter valor formatado para número
+    const preco = parseCurrency(precoInput.value);
+    
+    if (preco <= 0) {
+      showNotification("Preço deve ser maior que zero", "error");
+      return;
+    }
+
+    // Obter status ativo do checkbox
+    const ativoCheckbox = document.getElementById("produtoAtivo");
+    const ativo = ativoCheckbox ? ativoCheckbox.checked : true;
+
+    const dadosProduto = {
+      nome,
+      descricao: descricao || "",
+      preco: preco.toFixed(2),
+      ativo: ativo,
+    };
+
+    // Criar produto via API
+    await produtosService.criar(dadosProduto);
+
+    // Fechar modal
+    const modalElement = document.getElementById("produtoModal");
+    if (modalElement) {
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      if (modal) {
+        modal.hide();
+      }
+    }
+
+    showNotification("Produto criado com sucesso!", "success");
+    
+    // Navegar para a página de catálogo após um pequeno delay
+    setTimeout(() => {
+      showPage("catalogo");
+    }, 500);
+  } catch (error) {
+    console.error("Erro ao criar produto:", error);
+    showNotification(
+      `Erro ao criar produto: ${error.message || "Erro desconhecido"}`,
+      "error"
+    );
+  }
+}
+
+/**
+ * Salva um novo anúncio e navega para a página de anúncios
+ */
+async function salvarAnuncioDashboard() {
+  try {
+    const dataExpiracaoInput = document.getElementById("anuncioDataExpiracao");
+    const imagemInput = document.getElementById("anuncioImagem");
+    
+    if (!dataExpiracaoInput || !dataExpiracaoInput.value) {
+      showNotification("Data de expiração é obrigatória", "error");
+      return;
+    }
+
+    // Converter data para formato ISO com hora (final do dia)
+    const dataExpiracao = new Date(dataExpiracaoInput.value + "T23:59:59").toISOString();
+
+    const dadosAnuncio = {
+      data_expiracao: dataExpiracao,
+    };
+
+    // Se houver imagem selecionada, adicionar ao FormData
+    // Por enquanto, vamos criar sem imagem pois o upload de arquivo requer FormData
+    // TODO: Implementar upload de imagem quando necessário
+    if (imagemInput && imagemInput.files && imagemInput.files.length > 0) {
+      // Por enquanto, apenas avisar que a imagem será implementada depois
+      // O backend aceita imagem opcional, então podemos criar sem ela
+      console.log("Imagem selecionada, mas upload será implementado posteriormente");
+    }
+
+    // Criar anúncio via API
+    await anunciosService.criar(dadosAnuncio);
+
+    // Fechar modal
+    const modalElement = document.getElementById("anuncioModal");
+    if (modalElement) {
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      if (modal) {
+        modal.hide();
+      }
+    }
+
+    showNotification("Anúncio criado com sucesso!", "success");
+    
+    // Navegar para a página de anúncios após um pequeno delay
+    setTimeout(() => {
+      showPage("anuncios");
+    }, 500);
+  } catch (error) {
+    console.error("Erro ao criar anúncio:", error);
+    showNotification(
+      `Erro ao criar anúncio: ${error.message || "Erro desconhecido"}`,
+      "error"
+    );
+  }
+}
+
+/**
+ * Salva um novo funcionário e navega para a página de funcionários
+ */
+async function salvarFuncionarioDashboard() {
+  try {
+    const nome = document.getElementById("funcionarioNome")?.value.trim();
+    const cpf = document.getElementById("funcionarioCpf")?.value.replace(/\D/g, ""); // Remove formatação
+    const email = document.getElementById("funcionarioEmail")?.value.trim();
+    const senha = document.getElementById("funcionarioSenha")?.value;
+    const confirmarSenha = document.getElementById("funcionarioConfirmarSenha")?.value;
+    
+    // Validações
+    if (!nome) {
+      showNotification("Nome é obrigatório", "error");
+      return;
+    }
+    
+    if (!cpf || cpf.length !== 11) {
+      showNotification("CPF inválido", "error");
+      return;
+    }
+    
+    if (!email) {
+      showNotification("E-mail é obrigatório", "error");
+      return;
+    }
+    
+    if (!senha || senha.length < 6) {
+      showNotification("Senha deve ter no mínimo 6 caracteres", "error");
+      return;
+    }
+    
+    if (senha !== confirmarSenha) {
+      showNotification("As senhas não coincidem", "error");
+      return;
+    }
+
+    const dadosFuncionario = {
+      nome,
+      cpf,
+      email,
+      password: senha,
+      password2: confirmarSenha,
+    };
+    
+    // Se o campo de estabelecimento estiver visível e preenchido, adicionar
+    const estabelecimentoContainer = document.getElementById("funcionarioEstabelecimentoContainer");
+    const estabelecimentoSelect = document.getElementById("funcionarioEstabelecimento");
+    
+    if (estabelecimentoContainer && estabelecimentoContainer.style.display !== "none") {
+      const estabelecimentoId = estabelecimentoSelect?.value;
+      if (estabelecimentoId) {
+        dadosFuncionario.estabelecimento = parseInt(estabelecimentoId);
+      }
+    }
+    // Se não estiver visível, a API usará automaticamente o estabelecimento do usuário logado
+
+    // Criar funcionário via API
+    await administradoresService.criar(dadosFuncionario);
+
+    // Fechar modal
+    const modalElement = document.getElementById("funcionarioModal");
+    if (modalElement) {
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      if (modal) {
+        modal.hide();
+      }
+    }
+
+    showNotification("Funcionário criado com sucesso!", "success");
+    
+    // Navegar para a página de funcionários após um pequeno delay
+    setTimeout(() => {
+      showPage("funcionarios");
+    }, 500);
+  } catch (error) {
+    console.error("Erro ao criar funcionário:", error);
+    
+    // Tratar erros específicos da API
+    let errorMessage = "Erro ao criar funcionário";
+    if (error.message) {
+      errorMessage = error.message;
+    } else if (error.response) {
+      // Se houver resposta da API com detalhes
+      const errorData = await error.response.json().catch(() => ({}));
+      if (errorData.password) {
+        errorMessage = Array.isArray(errorData.password) 
+          ? errorData.password.join(", ") 
+          : errorData.password;
+      } else if (errorData.detail) {
+        errorMessage = errorData.detail;
+      }
+    }
+    
+    showNotification(errorMessage, "error");
+  }
+}
+
 // Exportar funções para escopo global
 window.carregarDadosDashboard = carregarDadosDashboard;
 window.aprovarTicket = aprovarTicket;
 window.rejeitarTicket = rejeitarTicket;
 window.visualizarTicket = visualizarTicket;
+window.scrollParaTickets = scrollParaTickets;
+window.abrirModalProduto = abrirModalProduto;
+window.abrirModalAnuncio = abrirModalAnuncio;
+window.abrirModalFuncionario = abrirModalFuncionario;
+window.salvarProdutoDashboard = salvarProdutoDashboard;
+window.salvarAnuncioDashboard = salvarAnuncioDashboard;
+window.salvarFuncionarioDashboard = salvarFuncionarioDashboard;
+window.formatCurrency = formatCurrency;
+window.formatCPF = formatCPF;
+window.togglePasswordVisibility = togglePasswordVisibility;

@@ -100,18 +100,35 @@
               <textarea class="form-control" id="produtoDescricao" rows="3"></textarea>
             </div>
             <div class="mb-3">
-              <label for="produtoPontos" class="form-label">Pontos Necessários</label>
-              <input type="number" class="form-control" id="produtoPontos" min="1" required>
+              <label for="produtoPreco" class="form-label">Preço do Produto</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="produtoPreco" 
+                  placeholder="0,00"
+                  oninput="formatCurrency(this)"
+                  required
+                >
+              </div>
+              <small class="text-muted">O sistema calculará os pontos automaticamente baseado no preço</small>
             </div>
             <div class="mb-3">
               <label for="produtoImagem" class="form-label">Imagem do Produto</label>
               <input type="file" class="form-control" id="produtoImagem" accept="image/*">
             </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="produtoAtivo" checked>
+              <label class="form-check-label" for="produtoAtivo">
+                Produto ativo (disponível para resgate imediatamente)
+              </label>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="salvarProduto()">Salvar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarProdutoDashboard()">Salvar</button>
         </div>
       </div>
     </div>
@@ -133,29 +150,71 @@
               <input type="text" class="form-control" id="funcionarioNome" required>
             </div>
             <div class="mb-3">
+              <label for="funcionarioCpf" class="form-label">CPF</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="funcionarioCpf" 
+                placeholder="000.000.000-00"
+                oninput="formatCPF(this)"
+                required
+              >
+            </div>
+            <div class="mb-3">
               <label for="funcionarioEmail" class="form-label">E-mail</label>
               <input type="email" class="form-control" id="funcionarioEmail" required>
             </div>
             <div class="mb-3">
-              <label for="funcionarioCpf" class="form-label">CPF</label>
-              <input type="text" class="form-control" id="funcionarioCpf" required>
+              <label for="funcionarioSenha" class="form-label">Senha</label>
+              <div class="input-group">
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="funcionarioSenha" 
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  minlength="6"
+                >
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button" 
+                  onclick="togglePasswordVisibility('funcionarioSenha')"
+                >
+                  <i class="bi bi-eye" id="funcionarioSenhaIcon"></i>
+                </button>
+              </div>
             </div>
             <div class="mb-3">
-              <label for="funcionarioCargo" class="form-label">Cargo</label>
-              <div class="dropdown">
-                <select class="form-select" id="funcionarioCargo" required>
-                  <option value="">Selecione um cargo</option>
-                  <option value="funcionario">Funcionário</option>
-                  <option value="gerente">Gerente</option>
-                </select>
-                <i class="bi bi-chevron-down dropdown-icon"></i>
+              <label for="funcionarioConfirmarSenha" class="form-label">Confirmar Senha</label>
+              <div class="input-group">
+                <input 
+                  type="password" 
+                  class="form-control" 
+                  id="funcionarioConfirmarSenha" 
+                  placeholder="Digite a senha novamente"
+                  required
+                  minlength="6"
+                >
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button" 
+                  onclick="togglePasswordVisibility('funcionarioConfirmarSenha')"
+                >
+                  <i class="bi bi-eye" id="funcionarioConfirmarSenhaIcon"></i>
+                </button>
               </div>
+            </div>
+            <div class="mb-3" id="funcionarioEstabelecimentoContainer" style="display: none;">
+              <label for="funcionarioEstabelecimento" class="form-label">Estabelecimento</label>
+              <select class="form-select" id="funcionarioEstabelecimento">
+                <option value="">Carregando...</option>
+              </select>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="salvarFuncionario()">Salvar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarFuncionarioDashboard()">Salvar</button>
         </div>
       </div>
     </div>
@@ -163,7 +222,7 @@
 
   <!-- Modal para adicionar/editar anúncio -->
   <div class="modal fade" id="anuncioModal" tabindex="-1" aria-labelledby="anuncioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="anuncioModalLabel">Criar Anúncio</h5>
@@ -172,36 +231,20 @@
         <div class="modal-body">
           <form id="anuncioForm">
             <div class="mb-3">
-              <label for="anuncioTitulo" class="form-label">Título do Anúncio</label>
-              <input type="text" class="form-control" id="anuncioTitulo" required>
-            </div>
-            <div class="mb-3">
-              <label for="anuncioDescricao" class="form-label">Descrição</label>
-              <textarea class="form-control" id="anuncioDescricao" rows="4" required></textarea>
-            </div>
-            <div class="mb-3">
               <label for="anuncioImagem" class="form-label">Imagem do Anúncio</label>
               <input type="file" class="form-control" id="anuncioImagem" accept="image/*">
+              <small class="text-muted">A imagem é opcional</small>
             </div>
-            <div class="row">
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label for="anuncioDataInicio" class="form-label">Data de Início</label>
-                  <input type="date" class="form-control" id="anuncioDataInicio" required>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="mb-3">
-                  <label for="anuncioDataFim" class="form-label">Data de Fim</label>
-                  <input type="date" class="form-control" id="anuncioDataFim" required>
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="anuncioDataExpiracao" class="form-label">Data de Expiração</label>
+              <input type="date" class="form-control" id="anuncioDataExpiracao" required>
+              <small class="text-muted">Data até quando o anúncio ficará ativo</small>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="salvarAnuncio()">Salvar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarAnuncioDashboard()">Salvar</button>
         </div>
       </div>
     </div>

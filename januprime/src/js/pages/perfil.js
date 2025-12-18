@@ -1,5 +1,6 @@
 import { getMainFooter } from "../components/main-footer.js";
 import { showNotification } from "../utils/notifications.js";
+import { estabelecimentosService } from "../services/estabelecimentos.js";
 
 // Função para obter dados do usuário logado
 function getUserData() {
@@ -12,11 +13,104 @@ function getUserData() {
   }
 }
 
+// Variável para armazenar dados do estabelecimento
+let dadosEstabelecimentoPerfil = null;
+
+/**
+ * Carrega dados do estabelecimento para o perfil
+ */
+async function carregarDadosEstabelecimentoPerfil() {
+  try {
+    dadosEstabelecimentoPerfil = await estabelecimentosService.obterMeuEstabelecimento();
+    preencherFormularioPerfil();
+  } catch (error) {
+    console.error("Erro ao carregar dados do estabelecimento:", error);
+    showNotification("Erro ao carregar dados do estabelecimento", "error");
+  }
+}
+
+/**
+ * Preenche o formulário com os dados do estabelecimento
+ */
+function preencherFormularioPerfil() {
+  if (!dadosEstabelecimentoPerfil) return;
+
+  // Preencher campos do formulário
+  const nomeInput = document.getElementById("empresaNome");
+  if (nomeInput) nomeInput.value = dadosEstabelecimentoPerfil.nome || "";
+
+  const cnpjInput = document.getElementById("empresaCnpj");
+  if (cnpjInput) cnpjInput.value = dadosEstabelecimentoPerfil.cnpj || "";
+
+  const enderecoInput = document.getElementById("empresaEndereco");
+  if (enderecoInput) enderecoInput.value = dadosEstabelecimentoPerfil.endereco || "";
+
+  const telefoneInput = document.getElementById("empresaTelefone");
+  if (telefoneInput && dadosEstabelecimentoPerfil.telefone) {
+    telefoneInput.value = dadosEstabelecimentoPerfil.telefone;
+  }
+
+  const descricaoInput = document.getElementById("empresaDescricao");
+  if (descricaoInput) descricaoInput.value = dadosEstabelecimentoPerfil.descricao || "";
+
+  const horarioInput = document.getElementById("empresaHorario");
+  if (horarioInput && dadosEstabelecimentoPerfil.horario_funcionamento) {
+    // Converter JSON de horário para string legível
+    const horario = dadosEstabelecimentoPerfil.horario_funcionamento;
+    if (typeof horario === "object") {
+      const horarioStr = Object.entries(horario)
+        .map(([dia, horas]) => `${dia}: ${horas}`)
+        .join(", ");
+      horarioInput.value = horarioStr;
+    } else {
+      horarioInput.value = horario;
+    }
+  }
+
+  // Atualizar preview
+  atualizarPreviewPerfil();
+}
+
+/**
+ * Atualiza o preview do perfil
+ */
+function atualizarPreviewPerfil() {
+  if (!dadosEstabelecimentoPerfil) return;
+
+  const previewNome = document.getElementById("previewNome");
+  if (previewNome) {
+    previewNome.textContent = dadosEstabelecimentoPerfil.nome || "Nome do Estabelecimento";
+  }
+
+  const previewEndereco = document.getElementById("previewEndereco");
+  if (previewEndereco) {
+    previewEndereco.textContent = dadosEstabelecimentoPerfil.endereco || "Endereço não cadastrado";
+  }
+
+  const previewHorario = document.getElementById("previewHorario");
+  if (previewHorario && dadosEstabelecimentoPerfil.horario_funcionamento) {
+    const horario = dadosEstabelecimentoPerfil.horario_funcionamento;
+    if (typeof horario === "object") {
+      const horarioStr = Object.entries(horario)
+        .map(([dia, horas]) => `${dia}: ${horas}`)
+        .join(", ");
+      previewHorario.textContent = horarioStr;
+    } else {
+      previewHorario.textContent = horario;
+    }
+  }
+}
+
 export function getPerfilContent() {
   const userData = getUserData();
   const nomeEstabelecimento = userData?.estabelecimento?.nome || "Nome do Estabelecimento";
   const emailUsuario = userData?.email || "email@exemplo.com";
   const nomeUsuario = userData?.nome || "Usuário";
+  
+  // Carregar dados do estabelecimento após renderizar
+  setTimeout(() => {
+    carregarDadosEstabelecimentoPerfil();
+  }, 100);
   
   return `
     <div class="container-fluid">
@@ -45,7 +139,8 @@ export function getPerfilContent() {
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaCnpj" class="form-label">CNPJ</label>
-                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00">
+                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00" readonly>
+                      <small class="text-muted">CNPJ não pode ser alterado</small>
                     </div>
                   </div>
                 </div>
@@ -142,9 +237,68 @@ export function getPerfilContent() {
   `;
 }
 
-export function salvarPerfil() {
-  console.log("Salvando perfil...");
-  showNotification("Perfil salvo com sucesso!", "success");
+export async function salvarPerfil() {
+  try {
+    if (!dadosEstabelecimentoPerfil || !dadosEstabelecimentoPerfil.id) {
+      showNotification("Erro: Estabelecimento não encontrado", "error");
+      return;
+    }
+
+    // Coletar dados do formulário
+    const nome = document.getElementById("empresaNome")?.value || "";
+    const endereco = document.getElementById("empresaEndereco")?.value || "";
+    const telefone = document.getElementById("empresaTelefone")?.value || "";
+    const descricao = document.getElementById("empresaDescricao")?.value || "";
+    const horarioStr = document.getElementById("empresaHorario")?.value || "";
+
+    // Converter horário de string para JSON se necessário
+    let horarioFuncionamento = dadosEstabelecimentoPerfil.horario_funcionamento || {};
+    if (horarioStr) {
+      // Tentar parsear se for JSON válido, senão manter como string
+      try {
+        horarioFuncionamento = JSON.parse(horarioStr);
+      } catch {
+        // Se não for JSON, manter como está ou processar de outra forma
+        horarioFuncionamento = horarioStr;
+      }
+    }
+
+    // Preparar dados para atualização
+    const dadosAtualizacao = {
+      nome: nome.trim(),
+      endereco: endereco.trim(),
+      telefone: telefone.trim() || null,
+      descricao: descricao.trim(),
+      horario_funcionamento: horarioFuncionamento,
+    };
+
+    // Remover campos vazios
+    Object.keys(dadosAtualizacao).forEach((key) => {
+      if (dadosAtualizacao[key] === "" || dadosAtualizacao[key] === null) {
+        delete dadosAtualizacao[key];
+      }
+    });
+
+    // Atualizar estabelecimento
+    const estabelecimentoAtualizado = await estabelecimentosService.atualizar(
+      dadosEstabelecimentoPerfil.id,
+      dadosAtualizacao
+    );
+
+    // Atualizar dados locais
+    dadosEstabelecimentoPerfil = estabelecimentoAtualizado;
+    
+    // Atualizar preview
+    atualizarPreviewPerfil();
+
+    showNotification("Perfil salvo com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao salvar perfil:", error);
+    showNotification(
+      `Erro ao salvar perfil: ${error.message || "Erro desconhecido"}`,
+      "error"
+    );
+  }
 }
 
 export function adicionarFoto() {
