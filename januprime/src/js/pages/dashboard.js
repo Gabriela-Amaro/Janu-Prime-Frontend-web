@@ -1,4 +1,3 @@
-import { APP_CONFIG } from "../config/app.js";
 import { mockData } from "../config/mockData.js";
 import { debounce } from "../utils/debounce.js";
 import { showNotification } from "../utils/notifications.js";
@@ -6,13 +5,23 @@ import { getMainFooter } from "../components/main-footer.js";
 
 // Estado global da aplicação
 let currentPage = "dashboard";
-let currentUser = {
-  nome: "João Silva",
-  email: "joao@pizzariasaborlocal.com",
-  tipo: "admin",
-};
+
+// Função para obter dados do usuário logado
+function getUserData() {
+  try {
+    const userData = localStorage.getItem("userData");
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Erro ao obter dados do usuário:", error);
+    return null;
+  }
+}
 
 export function getDashboardContent() {
+  const userData = getUserData();
+  const nomeUsuario = userData?.nome || "Usuário";
+  const nomeEstabelecimento = userData?.estabelecimento?.nome || "Seu Estabelecimento";
+  
   return `
     <div class="container-fluid">
       <!-- Header com saudação -->
@@ -20,15 +29,11 @@ export function getDashboardContent() {
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h1 class="text-gradient mb-0">Bem-vindo, ${
-                currentUser.nome
-              }!</h1>
+              <h1 class="text-gradient mb-0">Bem-vindo, ${nomeUsuario}!</h1>
               <p class="text-muted">Aqui está um resumo do seu estabelecimento</p>
             </div>
             <div class="text-end">
-              <small class="text-muted">Última atualização: ${new Date().toLocaleString(
-                "pt-BR"
-              )}</small>
+              <small class="text-muted">Última atualização: ${new Date().toLocaleString("pt-BR")}</small>
             </div>
           </div>
         </div>
@@ -312,14 +317,12 @@ export function getDashboardContent() {
               <div class="mb-3">
                 <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="60" height="60">
               </div>
-              <h6 class="mb-1">${APP_CONFIG.empresa.nome}</h6>
-              <p class="text-muted small mb-2">${
-                APP_CONFIG.empresa.endereco
-              }</p>
+              <h6 class="mb-1">${nomeEstabelecimento}</h6>
+              <p class="text-muted small mb-2">endereço</p>
               <div class="row text-center">
                 <div class="col-6">
                   <small class="text-muted d-block">Telefone</small>
-                  <small class="fw-bold">${APP_CONFIG.empresa.telefone}</small>
+                  <small class="fw-bold">(00)00000-0000</small>
                 </div>
                 <div class="col-6">
                   <small class="text-muted d-block">Status</small>
