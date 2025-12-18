@@ -29,101 +29,171 @@ async function carregarDadosDashboard() {
     // Carregar tickets (a API não filtra por status, filtramos localmente)
     const responseDebito = await ticketsService.listarDebito();
     const responseCredito = await ticketsService.listarCredito();
-    
+
     // Tratar resposta (pode ser array direto ou objeto paginado com results)
-    const ticketsDebito = Array.isArray(responseDebito) ? responseDebito : (responseDebito.results || []);
-    const ticketsCredito = Array.isArray(responseCredito) ? responseCredito : (responseCredito.results || []);
-    
+    const ticketsDebito = Array.isArray(responseDebito)
+      ? responseDebito
+      : responseDebito.results || [];
+    const ticketsCredito = Array.isArray(responseCredito)
+      ? responseCredito
+      : responseCredito.results || [];
+
     // Filtrar apenas tickets com status ABERTO e combinar
     ticketsPendentes = [
-      ...ticketsDebito.filter(t => t.status === "ABERTO").map(t => ({ ...t, tipo: "debito" })),
-      ...ticketsCredito.filter(t => t.status === "ABERTO").map(t => ({ ...t, tipo: "credito" })),
+      ...ticketsDebito
+        .filter((t) => t.status === "ABERTO")
+        .map((t) => ({ ...t, tipo: "debito" })),
+      ...ticketsCredito
+        .filter((t) => t.status === "ABERTO")
+        .map((t) => ({ ...t, tipo: "credito" })),
     ];
-    
+
     console.log("Tickets pendentes carregados:", ticketsPendentes.length);
-    
+
     // Atualizar UI com tickets
     atualizarTicketsUI();
     atualizarContadores();
-    
   } catch (error) {
     console.error("Erro ao carregar dados do dashboard:", error);
-    showNotification("Erro ao carregar dados. Usando dados de demonstração.", "warning");
+    showNotification(
+      "Erro ao carregar dados. Usando dados de demonstração.",
+      "warning"
+    );
   }
 }
 
 /**
- * Atualiza a UI com os tickets carregados
+ * Gera o HTML de um card de ticket
  */
-function atualizarTicketsUI() {
-  const container = document.getElementById("tickets-container");
-  if (!container) return;
-  
-  if (ticketsPendentes.length === 0) {
-    container.innerHTML = `
-      <div class="col-12 text-center py-5">
-        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
-        <h5 class="mt-3 text-muted">Nenhum ticket pendente!</h5>
-        <p class="text-muted">Todos os tickets foram processados.</p>
-      </div>
-    `;
-    return;
-  }
-  
-  container.innerHTML = ticketsPendentes.map(ticket => `
-    <div class="col-md-6 mb-3">
-      <div class="card h-100 border-${ticket.tipo === "credito" ? "success" : "warning"}">
+function gerarCardTicket(ticket) {
+  return `
+    <div class="mb-3">
+      <div class="card border-${
+        ticket.tipo === "credito" ? "success" : "warning"
+      }">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start mb-3">
             <div>
               <h6 class="card-title mb-1">
-                <span class="badge bg-${ticket.tipo === "credito" ? "success" : "warning"} me-2">
+                <span class="badge bg-${
+                  ticket.tipo === "credito" ? "success" : "warning"
+                } me-2">
                   ${ticket.tipo === "credito" ? "Crédito" : "Débito"}
                 </span>
                 #${ticket.codigo}
               </h6>
-              <p class="text-muted small mb-0">Cliente: ${ticket.nome_cliente || "N/A"}</p>
+              <p class="text-muted small mb-0">Cliente: ${
+                ticket.nome_cliente || "N/A"
+              }</p>
             </div>
-            <small class="text-muted">${new Date(ticket.created_at).toLocaleDateString("pt-BR")}</small>
+            <small class="text-muted">${new Date(
+              ticket.created_at
+            ).toLocaleDateString("pt-BR")}</small>
           </div>
           
           <div class="mb-3">
-            ${ticket.tipo === "credito" ? `
+            ${
+              ticket.tipo === "credito"
+                ? `
               <div class="d-flex justify-content-between">
                 <span class="text-muted">Valor da Nota:</span>
-                <strong class="text-success">R$ ${parseFloat(ticket.preco).toFixed(2)}</strong>
+                <strong class="text-success">R$ ${parseFloat(
+                  ticket.preco
+                ).toFixed(2)}</strong>
               </div>
               <div class="d-flex justify-content-between">
                 <span class="text-muted">Pontos a Creditar:</span>
                 <strong class="text-primary">${ticket.pontos || 0} pts</strong>
               </div>
-            ` : `
+            `
+                : `
               <div class="d-flex justify-content-between">
                 <span class="text-muted">Produto:</span>
-                <strong class="text-warning">${ticket.nome_produto || "N/A"}</strong>
+                <strong class="text-warning">${
+                  ticket.nome_produto || "N/A"
+                }</strong>
               </div>
               <div class="d-flex justify-content-between">
                 <span class="text-muted">Pontos a Debitar:</span>
                 <strong class="text-danger">${ticket.pontos} pts</strong>
               </div>
-            `}
+            `
+            }
           </div>
           
           <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-success flex-fill" onclick="aprovarTicket(${ticket.id}, '${ticket.tipo}')">
+            <button class="btn btn-sm btn-success flex-fill" onclick="aprovarTicket(${
+              ticket.id
+            }, '${ticket.tipo}')">
               <i class="bi bi-check-lg me-1"></i>Aprovar
             </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTicket(${ticket.id}, '${ticket.tipo}')">
+            <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTicket(${
+              ticket.id
+            }, '${ticket.tipo}')">
               <i class="bi bi-x-lg"></i>
             </button>
-            <button class="btn btn-sm btn-outline-primary" onclick="visualizarTicket(${ticket.id}, '${ticket.tipo}')">
+            <button class="btn btn-sm btn-outline-primary" onclick="visualizarTicket(${
+              ticket.id
+            }, '${ticket.tipo}')">
               <i class="bi bi-eye"></i>
             </button>
           </div>
         </div>
       </div>
     </div>
-  `).join("");
+  `;
+}
+
+function atualizarTicketsUI() {
+  const containerDebito = document.getElementById("tickets-debito-container");
+  const containerCredito = document.getElementById("tickets-credito-container");
+
+  // Separar tickets por tipo e ordenar do mais antigo para o mais recente
+  const ticketsDebito = ticketsPendentes
+    .filter((t) => t.tipo === "debito")
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  const ticketsCredito = ticketsPendentes
+    .filter((t) => t.tipo === "credito")
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  // Atualizar container de Débito
+  if (containerDebito) {
+    if (ticketsDebito.length === 0) {
+      containerDebito.innerHTML = `
+        <div class="text-center py-4">
+          <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+          <p class="mt-2 text-muted mb-0">Nenhum resgate pendente</p>
+        </div>
+      `;
+    } else {
+      containerDebito.innerHTML = ticketsDebito
+        .map((ticket) => gerarCardTicket(ticket))
+        .join("");
+    }
+  }
+
+  // Atualizar container de Crédito
+  if (containerCredito) {
+    if (ticketsCredito.length === 0) {
+      containerCredito.innerHTML = `
+        <div class="text-center py-4">
+          <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+          <p class="mt-2 text-muted mb-0">Nenhuma nota fiscal pendente</p>
+        </div>
+      `;
+    } else {
+      containerCredito.innerHTML = ticketsCredito
+        .map((ticket) => gerarCardTicket(ticket))
+        .join("");
+    }
+  }
+
+  // Atualizar contadores nos headers
+  const contadorDebito = document.getElementById("contador-debito");
+  const contadorCredito = document.getElementById("contador-credito");
+  if (contadorDebito) contadorDebito.textContent = ticketsDebito.length;
+  if (contadorCredito) contadorCredito.textContent = ticketsCredito.length;
 }
 
 /**
@@ -139,8 +209,9 @@ function atualizarContadores() {
 export function getDashboardContent() {
   const userData = getUserData();
   const nomeUsuario = userData?.nome || "Usuário";
-  const nomeEstabelecimento = userData?.estabelecimento?.nome || "Seu Estabelecimento";
-  
+  const nomeEstabelecimento =
+    userData?.estabelecimento?.nome || "Seu Estabelecimento";
+
   return `
     <div class="container-fluid">
       <!-- Header com saudação -->
@@ -152,7 +223,9 @@ export function getDashboardContent() {
               <p class="text-muted">Aqui está um resumo do seu estabelecimento</p>
             </div>
             <div class="text-end">
-              <small class="text-muted">Última atualização: ${new Date().toLocaleString("pt-BR")}</small>
+              <small class="text-muted">Última atualização: ${new Date().toLocaleString(
+                "pt-BR"
+              )}</small>
             </div>
           </div>
         </div>
@@ -290,130 +363,57 @@ export function getDashboardContent() {
         </div>
       </div>
       
-      <!-- Seção principal com tickets e previews -->
+      <!-- Seção principal com tickets e sidebar -->
       <div class="row">
-        <!-- Tickets Pendentes -->
-        <div class="col-lg-8">
-          <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h6 class="m-0 font-weight-bold text-primary">
-                <i class="bi bi-ticket-perforated me-2"></i>Tickets Pendentes
+        <!-- Tickets de Débito (Resgates) -->
+        <div class="col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-warning bg-opacity-10 py-2">
+              <h6 class="m-0 font-weight-bold text-warning small">
+                <i class="bi bi-cart-check me-1"></i>Resgates (Débito)
+                <span class="badge bg-warning text-dark ms-1" id="contador-debito">0</span>
               </h6>
-              <div class="d-flex gap-2">
-                <div class="input-group input-group-sm" style="width: 200px;">
-                  <input type="text" class="form-control" placeholder="Buscar..." id="searchTickets" oninput="testFiltrarTickets()">
-                  <span class="input-group-text">
-                    <i class="bi bi-search"></i>
-                  </span>
-                </div>
-                <div class="dropdown" style="width: 120px;">
-                  <select class="form-select form-select-sm" id="filterTipoTicket" onchange="testFiltrarTickets()">
-                    <option value="">Todos</option>
-                    <option value="credito">Crédito</option>
-                    <option value="debito">Débito</option>
-                  </select>
-                  <i class="bi bi-chevron-down dropdown-icon"></i>
+              <div class="input-group input-group-sm" style="width: 120px;">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar..." id="searchTicketsDebito" oninput="filtrarTicketsDebito()">
+                <span class="input-group-text py-0">
+                  <i class="bi bi-search small"></i>
+                </span>
+              </div>
+            </div>
+            <div class="card-body p-2" style="max-height: 590px; overflow-y: auto; overflow-x: hidden;">
+              <div id="tickets-debito-container">
+                <div class="text-center py-4">
+                  <div class="spinner-border spinner-border-sm text-warning" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="card-body">
-              <div class="row" id="tickets-container">
-                ${mockData.transacoes
-                  .filter((t) => t.status === "pendente")
-                  .map(
-                    (ticket) => `
-                  <div class="col-md-6 mb-3">
-                    <div class="card h-100 border-${
-                      ticket.tipo === "credito" ? "success" : "warning"
-                    }">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                          <div>
-                            <h6 class="card-title mb-1">
-                              <span class="badge bg-${
-                                ticket.tipo === "credito"
-                                  ? "success"
-                                  : "warning"
-                              } me-2">
-                                ${
-                                  ticket.tipo === "credito"
-                                    ? "Crédito"
-                                    : "Débito"
-                                }
-                              </span>
-                              Ticket #${ticket.id}
-                            </h6>
-                            <p class="text-muted small mb-0">Cliente: ${
-                              ticket.cliente
-                            }</p>
-                          </div>
-                          <small class="text-muted">${new Date(
-                            ticket.data
-                          ).toLocaleDateString("pt-BR")}</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                          ${
-                            ticket.tipo === "credito"
-                              ? `
-                            <div class="d-flex justify-content-between">
-                              <span class="text-muted">Valor da Nota:</span>
-                              <strong class="text-success">R$ ${ticket.valor}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                              <span class="text-muted">Pontos a Creditar:</span>
-                              <strong class="text-primary">${ticket.pontos} pts</strong>
-                            </div>
-                          `
-                              : `
-                            <div class="d-flex justify-content-between">
-                              <span class="text-muted">Produto:</span>
-                              <strong class="text-warning">${ticket.produto}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                              <span class="text-muted">Pontos a Debitar:</span>
-                              <strong class="text-danger">${ticket.pontos} pts</strong>
-                            </div>
-                          `
-                          }
-                        </div>
-                        
-                        <div class="d-flex gap-2">
-                          <button class="btn btn-sm btn-success flex-fill" onclick="aprovarTicket(${
-                            ticket.id
-                          })">
-                            <i class="bi bi-check-lg me-1"></i>Aprovar
-                          </button>
-                          <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTicket(${
-                            ticket.id
-                          })">
-                            <i class="bi bi-x-lg"></i>
-                          </button>
-                          <button class="btn btn-sm btn-outline-primary" onclick="visualizarTicket(${
-                            ticket.id
-                          })">
-                            <i class="bi bi-eye"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+          </div>
+        </div>
+        
+        <!-- Tickets de Crédito (Notas Fiscais) -->
+        <div class="col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-10 py-2">
+              <h6 class="m-0 font-weight-bold text-success small">
+                <i class="bi bi-receipt me-1"></i>Notas Fiscais (Crédito)
+                <span class="badge bg-success ms-1" id="contador-credito">0</span>
+              </h6>
+              <div class="input-group input-group-sm" style="width: 120px;">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar..." id="searchTicketsCredito" oninput="filtrarTicketsCredito()">
+                <span class="input-group-text py-0">
+                  <i class="bi bi-search small"></i>
+                </span>
+              </div>
+            </div>
+            <div class="card-body p-2" style="max-height: 590px; overflow-y: auto; overflow-x: hidden;">
+              <div id="tickets-credito-container">
+                <div class="text-center py-4">
+                  <div class="spinner-border spinner-border-sm text-success" role="status">
+                    <span class="visually-hidden">Carregando...</span>
                   </div>
-                `
-                  )
-                  .join("")}
-                
-                ${
-                  mockData.transacoes.filter((t) => t.status === "pendente")
-                    .length === 0
-                    ? `
-                  <div class="col-12 text-center py-5">
-                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3 text-muted">Nenhum ticket pendente!</h5>
-                    <p class="text-muted">Todos os tickets foram processados.</p>
-                  </div>
-                `
-                    : ""
-                }
+                </div>
               </div>
             </div>
           </div>
@@ -422,44 +422,44 @@ export function getDashboardContent() {
         <!-- Sidebar com previews -->
         <div class="col-lg-4">
           <!-- Preview do Perfil -->
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h6 class="m-0 font-weight-bold text-primary">
-                <i class="bi bi-building me-2"></i>Perfil da Empresa
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+              <h6 class="m-0 font-weight-bold text-primary small">
+                <i class="bi bi-building me-1"></i>Perfil da Empresa
               </h6>
-              <button class="btn btn-sm btn-outline-primary" onclick="showPage('perfil')">
-                <i class="bi bi-pencil"></i>
+              <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="showPage('perfil')">
+                <i class="bi bi-pencil small"></i>
               </button>
             </div>
-            <div class="card-body text-center">
-              <div class="mb-3">
-                <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="60" height="60">
+            <div class="card-body py-2 text-center">
+              <div class="mb-2">
+                <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="50" height="50">
               </div>
-              <h6 class="mb-1">${nomeEstabelecimento}</h6>
+              <h6 class="mb-1 small">${nomeEstabelecimento}</h6>
               <p class="text-muted small mb-2">endereço</p>
               <div class="row text-center">
                 <div class="col-6">
-                  <small class="text-muted d-block">Telefone</small>
-                  <small class="fw-bold">(00)00000-0000</small>
+                  <small class="text-muted d-block" style="font-size: 0.7rem;">Telefone</small>
+                  <small class="fw-bold" style="font-size: 0.75rem;">(00)00000-0000</small>
                 </div>
                 <div class="col-6">
-                  <small class="text-muted d-block">Status</small>
-                  <span class="badge bg-success">Ativo</span>
+                  <small class="text-muted d-block" style="font-size: 0.7rem;">Status</small>
+                  <span class="badge bg-success" style="font-size: 0.65rem;">Ativo</span>
                 </div>
               </div>
             </div>
           </div>
           
           <!-- Resumo de Atividades -->
-          <div class="card mb-4">
-            <div class="card-header">
-              <h6 class="m-0 font-weight-bold text-primary">
-                <i class="bi bi-activity me-2"></i>Resumo de Atividades
+          <div class="card mb-3">
+            <div class="card-header py-2">
+              <h6 class="m-0 font-weight-bold text-primary small">
+                <i class="bi bi-activity me-1"></i>Resumo de Atividades
               </h6>
             </div>
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">Hoje</span>
+            <div class="card-body py-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Hoje</span>
                 <span class="badge bg-primary">${
                   mockData.transacoes.filter(
                     (t) =>
@@ -468,8 +468,8 @@ export function getDashboardContent() {
                   ).length
                 } transações</span>
               </div>
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-muted">Esta semana</span>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Esta semana</span>
                 <span class="badge bg-success">${
                   mockData.transacoes.filter((t) => {
                     const ticketDate = new Date(t.data);
@@ -480,40 +480,44 @@ export function getDashboardContent() {
                 } transações</span>
               </div>
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted">Total de clientes</span>
+                <span class="text-muted small">Total de clientes</span>
                 <span class="badge bg-info">1,247</span>
               </div>
             </div>
           </div>
           
           <!-- Preview dos Produtos -->
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h6 class="m-0 font-weight-bold text-primary">
-                <i class="bi bi-box-seam me-2"></i>Produtos Recentes
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+              <h6 class="m-0 font-weight-bold text-primary small">
+                <i class="bi bi-box-seam me-1"></i>Produtos Recentes
               </h6>
-              <button class="btn btn-sm btn-outline-primary" onclick="showPage('catalogo')">
-                <i class="bi bi-arrow-right"></i>
+              <button class="btn btn-sm btn-outline-primary py-0 px-1" onclick="showPage('catalogo')">
+                <i class="bi bi-arrow-right small"></i>
               </button>
             </div>
-            <div class="card-body">
+            <div class="card-body py-2">
               ${mockData.produtos
-                .slice(0, 10)
+                .slice(0, 3)
                 .map(
                   (produto) => `
-                <div class="d-flex align-items-center mb-3">
+                <div class="d-flex align-items-center mb-2">
                   <div class="flex-shrink-0">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                      <i class="bi bi-gift text-white"></i>
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                      <i class="bi bi-gift text-white small"></i>
                     </div>
                   </div>
-                  <div class="flex-grow-1 ms-3">
-                    <h6 class="mb-1">${produto.nome}</h6>
-                    <small class="text-muted">${produto.pontos} pontos</small>
+                  <div class="flex-grow-1 ms-2">
+                    <p class="mb-0 small">${produto.nome}</p>
+                    <small class="text-muted" style="font-size: 0.7rem;">${
+                      produto.pontos
+                    } pts</small>
                   </div>
                   <span class="badge ${
                     produto.ativo ? "bg-success" : "bg-secondary"
-                  }">${produto.ativo ? "Ativo" : "Inativo"}</span>
+                  }" style="font-size: 0.65rem;">${
+                    produto.ativo ? "Ativo" : "Inativo"
+                  }</span>
                 </div>
               `
                 )
@@ -522,15 +526,15 @@ export function getDashboardContent() {
               ${
                 mockData.produtos.length === 0
                   ? `
-                <div class="text-center py-3">
-                  <i class="bi bi-box text-muted" style="font-size: 2rem;"></i>
-                  <p class="text-muted small mt-2">Nenhum produto cadastrado</p>
+                <div class="text-center py-2">
+                  <i class="bi bi-box text-muted"></i>
+                  <p class="text-muted small mt-1 mb-0">Nenhum produto</p>
                 </div>
               `
                   : `
-                <div class="text-center mt-3 pt-3 border-top">
-                  <button class="btn btn-outline-primary btn-sm" onclick="showPage('catalogo')">
-                    <i class="bi bi-arrow-right me-1"></i>Ver Todos os Produtos
+                <div class="text-center mt-2 pt-2 border-top">
+                  <button class="btn btn-outline-primary btn-sm py-0" onclick="showPage('catalogo')">
+                    <small><i class="bi bi-arrow-right me-1"></i>Ver Todos</small>
                   </button>
                 </div>
               `
@@ -552,6 +556,98 @@ const filtrarTicketsAuto = debounce(() => {
 
 // Exportar para escopo global
 window.filtrarTicketsAuto = filtrarTicketsAuto;
+
+function filtrarTicketsDebito() {
+  const searchTerm =
+    document.getElementById("searchTicketsDebito")?.value.toLowerCase() || "";
+  const containerDebito = document.getElementById("tickets-debito-container");
+
+  if (!containerDebito) return;
+
+  // Filtrar tickets de débito
+  let ticketsFiltrados = ticketsPendentes
+    .filter((t) => t.tipo === "debito")
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  // Aplicar filtro de busca
+  if (searchTerm) {
+    ticketsFiltrados = ticketsFiltrados.filter(
+      (t) =>
+        (t.nome_cliente && t.nome_cliente.toLowerCase().includes(searchTerm)) ||
+        (t.codigo && t.codigo.toString().toLowerCase().includes(searchTerm)) ||
+        (t.nome_produto && t.nome_produto.toLowerCase().includes(searchTerm))
+    );
+  }
+
+  // Atualizar container
+  if (ticketsFiltrados.length === 0) {
+    containerDebito.innerHTML = `
+      <div class="text-center py-4">
+        <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+        <p class="mt-2 text-muted mb-0">${
+          searchTerm ? "Nenhum resultado encontrado" : "Nenhum resgate pendente"
+        }</p>
+      </div>
+    `;
+  } else {
+    containerDebito.innerHTML = ticketsFiltrados
+      .map((ticket) => gerarCardTicket(ticket))
+      .join("");
+  }
+
+  // Atualizar contador
+  const contadorDebito = document.getElementById("contador-debito");
+  if (contadorDebito) contadorDebito.textContent = ticketsFiltrados.length;
+}
+
+function filtrarTicketsCredito() {
+  const searchTerm =
+    document.getElementById("searchTicketsCredito")?.value.toLowerCase() || "";
+  const containerCredito = document.getElementById("tickets-credito-container");
+
+  if (!containerCredito) return;
+
+  // Filtrar tickets de crédito
+  let ticketsFiltrados = ticketsPendentes
+    .filter((t) => t.tipo === "credito")
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  // Aplicar filtro de busca
+  if (searchTerm) {
+    ticketsFiltrados = ticketsFiltrados.filter(
+      (t) =>
+        (t.nome_cliente && t.nome_cliente.toLowerCase().includes(searchTerm)) ||
+        (t.codigo && t.codigo.toString().toLowerCase().includes(searchTerm)) ||
+        (t.numero_nota && t.numero_nota.toString().includes(searchTerm))
+    );
+  }
+
+  // Atualizar container
+  if (ticketsFiltrados.length === 0) {
+    containerCredito.innerHTML = `
+      <div class="text-center py-4">
+        <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+        <p class="mt-2 text-muted mb-0">${
+          searchTerm
+            ? "Nenhum resultado encontrado"
+            : "Nenhuma nota fiscal pendente"
+        }</p>
+      </div>
+    `;
+  } else {
+    containerCredito.innerHTML = ticketsFiltrados
+      .map((ticket) => gerarCardTicket(ticket))
+      .join("");
+  }
+
+  // Atualizar contador
+  const contadorCredito = document.getElementById("contador-credito");
+  if (contadorCredito) contadorCredito.textContent = ticketsFiltrados.length;
+}
+
+// Exportar funções de filtro para escopo global
+window.filtrarTicketsDebito = filtrarTicketsDebito;
+window.filtrarTicketsCredito = filtrarTicketsCredito;
 
 // Função alternativa simples para teste
 window.testFiltrarTickets = function () {
@@ -714,10 +810,10 @@ export async function rejeitarTicket(id, tipo) {
 
 export function visualizarTicket(id, tipo) {
   console.log("Visualizando ticket:", id, tipo);
-  
+
   // Buscar ticket do array local
   const ticket = ticketsPendentes.find((t) => t.id === id && t.tipo === tipo);
-  
+
   if (!ticket) {
     showNotification("Ticket não encontrado", "error");
     return;
@@ -725,10 +821,11 @@ export function visualizarTicket(id, tipo) {
 
   // Modal diferenciado para crédito e débito
   let detalhesHTML = "";
-  
+
   if (tipo === "credito") {
     // Ticket de Crédito - Layout otimizado para verificação de nota fiscal
-    const imagemNota = ticket.imagem ? `
+    const imagemNota = ticket.imagem
+      ? `
       <div class="col-lg-5 mb-3 mb-lg-0">
         <div class="card h-100 bg-dark">
           <div class="card-header bg-primary text-white py-2">
@@ -746,7 +843,8 @@ export function visualizarTicket(id, tipo) {
           </div>
         </div>
       </div>
-    ` : `
+    `
+      : `
       <div class="col-lg-5 mb-3 mb-lg-0">
         <div class="card h-100 bg-secondary">
           <div class="card-body d-flex flex-column align-items-center justify-content-center text-muted" style="min-height: 300px;">
@@ -756,7 +854,7 @@ export function visualizarTicket(id, tipo) {
         </div>
       </div>
     `;
-    
+
     detalhesHTML = `
       <div class="row">
         ${imagemNota}
@@ -775,7 +873,9 @@ export function visualizarTicket(id, tipo) {
                 </div>
                 <div class="col-6">
                   <small class="text-muted d-block">Data do Envio</small>
-                  <strong>${new Date(ticket.created_at).toLocaleString("pt-BR")}</strong>
+                  <strong>${new Date(ticket.created_at).toLocaleString(
+                    "pt-BR"
+                  )}</strong>
                 </div>
               </div>
             </div>
@@ -797,13 +897,19 @@ export function visualizarTicket(id, tipo) {
                 <div class="col-6">
                   <div class="bg-dark bg-opacity-10 rounded p-2">
                     <small class="text-muted d-block">Data da Nota</small>
-                    <strong class="fs-5">${ticket.data_nota ? new Date(ticket.data_nota).toLocaleDateString("pt-BR") : "N/A"}</strong>
+                    <strong class="fs-5">${
+                      ticket.data_nota
+                        ? new Date(ticket.data_nota).toLocaleDateString("pt-BR")
+                        : "N/A"
+                    }</strong>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="bg-success bg-opacity-10 rounded p-2">
                     <small class="text-muted d-block">Valor Total</small>
-                    <strong class="fs-4 text-success">R$ ${parseFloat(ticket.preco || 0).toFixed(2)}</strong>
+                    <strong class="fs-4 text-success">R$ ${parseFloat(
+                      ticket.preco || 0
+                    ).toFixed(2)}</strong>
                   </div>
                 </div>
                 <div class="col-6">
@@ -822,18 +928,24 @@ export function visualizarTicket(id, tipo) {
               <h6 class="mb-0 text-success"><i class="bi bi-coin me-2"></i>Pontos a Creditar</h6>
             </div>
             <div class="card-body py-3 text-center">
-              <span class="display-5 fw-bold text-success">${ticket.pontos || 0}</span>
+              <span class="display-5 fw-bold text-success">${
+                ticket.pontos || 0
+              }</span>
               <span class="text-muted ms-2">pontos</span>
             </div>
           </div>
         </div>
       </div>
-      ${ticket.observacao ? `
+      ${
+        ticket.observacao
+          ? `
         <div class="alert alert-secondary mt-3 mb-0">
           <i class="bi bi-chat-left-text me-2"></i>
           <strong>Observação:</strong> ${ticket.observacao}
         </div>
-      ` : ""}
+      `
+          : ""
+      }
     `;
   } else {
     // Ticket de Débito - Layout elegante para resgate de produto
@@ -847,7 +959,9 @@ export function visualizarTicket(id, tipo) {
             </div>
             <div class="card-body d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 250px;">
               <i class="bi bi-box-seam text-warning" style="font-size: 5rem;"></i>
-              <h4 class="mt-3 mb-2 text-warning">${ticket.nome_produto || "Produto"}</h4>
+              <h4 class="mt-3 mb-2 text-warning">${
+                ticket.nome_produto || "Produto"
+              }</h4>
               <div class="bg-danger bg-opacity-25 rounded-pill px-4 py-2 mt-2">
                 <span class="text-danger fw-bold fs-5">
                   <i class="bi bi-dash-circle me-1"></i>${ticket.pontos} pontos
@@ -871,7 +985,9 @@ export function visualizarTicket(id, tipo) {
                 </div>
                 <div class="col-6">
                   <small class="text-muted d-block">Data da Solicitação</small>
-                  <strong>${new Date(ticket.created_at).toLocaleString("pt-BR")}</strong>
+                  <strong>${new Date(ticket.created_at).toLocaleString(
+                    "pt-BR"
+                  )}</strong>
                 </div>
               </div>
             </div>
@@ -887,13 +1003,21 @@ export function visualizarTicket(id, tipo) {
                 <div class="col-12">
                   <div class="bg-dark bg-opacity-10 rounded p-2">
                     <small class="text-muted d-block">Código do Ticket</small>
-                    <strong class="fs-5 font-monospace">#${ticket.codigo}</strong>
+                    <strong class="fs-5 font-monospace">#${
+                      ticket.codigo
+                    }</strong>
                   </div>
                 </div>
                 <div class="col-6">
                   <div class="bg-dark bg-opacity-10 rounded p-2">
                     <small class="text-muted d-block">Status</small>
-                    <span class="badge bg-${ticket.status === 'ABERTO' ? 'warning' : ticket.status === 'APROVADO' ? 'success' : 'secondary'} fs-6">
+                    <span class="badge bg-${
+                      ticket.status === "ABERTO"
+                        ? "warning"
+                        : ticket.status === "APROVADO"
+                        ? "success"
+                        : "secondary"
+                    } fs-6">
                       ${ticket.status}
                     </span>
                   </div>
@@ -909,12 +1033,16 @@ export function visualizarTicket(id, tipo) {
           </div>
         </div>
       </div>
-      ${ticket.observacao ? `
+      ${
+        ticket.observacao
+          ? `
         <div class="alert alert-secondary mt-3 mb-0">
           <i class="bi bi-chat-left-text me-2"></i>
           <strong>Observação:</strong> ${ticket.observacao}
         </div>
-      ` : ""}
+      `
+          : ""
+      }
     `;
   }
 
@@ -922,17 +1050,27 @@ export function visualizarTicket(id, tipo) {
     <div class="modal fade" id="ticketModal" tabindex="-1" aria-labelledby="ticketModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header bg-${tipo === "credito" ? "success" : "warning"} text-white">
+          <div class="modal-header bg-${
+            tipo === "credito" ? "success" : "warning"
+          } text-white">
             <h5 class="modal-title" id="ticketModalLabel">
               <i class="bi bi-ticket-perforated me-2"></i>
-              Ticket ${tipo === "credito" ? "de Crédito" : "de Débito"} #${ticket.codigo}
+              Ticket ${tipo === "credito" ? "de Crédito" : "de Débito"} #${
+    ticket.codigo
+  }
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-${tipo === "credito" ? "success" : "warning"} fs-6">
-                ${tipo === "credito" ? "Crédito de Pontos" : "Resgate de Produto"}
+              <span class="badge bg-${
+                tipo === "credito" ? "success" : "warning"
+              } fs-6">
+                ${
+                  tipo === "credito"
+                    ? "Crédito de Pontos"
+                    : "Resgate de Produto"
+                }
               </span>
               <span class="badge bg-info fs-6">
                 Status: ${ticket.status}
@@ -942,14 +1080,18 @@ export function visualizarTicket(id, tipo) {
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            ${ticket.status === "ABERTO" ? `
+            ${
+              ticket.status === "ABERTO"
+                ? `
               <button type="button" class="btn btn-danger" onclick="rejeitarTicket(${ticket.id}, '${tipo}'); bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();">
                 <i class="bi bi-x-lg me-1"></i>Recusar
               </button>
               <button type="button" class="btn btn-success" onclick="aprovarTicket(${ticket.id}, '${tipo}'); bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();">
                 <i class="bi bi-check-lg me-1"></i>Aprovar
               </button>
-            ` : ""}
+            `
+                : ""
+            }
           </div>
         </div>
       </div>
@@ -966,7 +1108,9 @@ export function visualizarTicket(id, tipo) {
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
   // Mostrar o modal
-  const modal = new window.bootstrap.Modal(document.getElementById("ticketModal"));
+  const modal = new window.bootstrap.Modal(
+    document.getElementById("ticketModal")
+  );
   modal.show();
 }
 
