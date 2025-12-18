@@ -18,6 +18,14 @@ export function showPage(pageName) {
     return;
   }
   
+  // Salvar página atual no localStorage (apenas para páginas protegidas)
+  if (protectedPages.includes(pageName)) {
+    localStorage.setItem('currentPage', pageName);
+  } else if (['login', 'register', 'forgot-password'].includes(pageName)) {
+    // Limpar página salva ao acessar páginas de autenticação
+    localStorage.removeItem('currentPage');
+  }
+  
   // Remove classe ativa de todos os links
   document.querySelectorAll('.nav-link').forEach(link => {
     link.classList.remove('active');

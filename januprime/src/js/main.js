@@ -38,11 +38,15 @@ function initializeApp() {
   
   // Verificar se o usuário está autenticado
   if (authService.isAuthenticated) {
-    // Se estiver autenticado, carregar dashboard
-    showPage('dashboard');
+    // Tentar restaurar a página salva, senão usar dashboard como padrão
+    const savedPage = localStorage.getItem('currentPage');
+    const pageToLoad = savedPage && savedPage !== 'login' ? savedPage : 'dashboard';
+    
+    showPage(pageToLoad);
     updatePermissionsUI();
   } else {
-    // Se não estiver autenticado, carregar página de login
+    // Se não estiver autenticado, limpar página salva e carregar login
+    localStorage.removeItem('currentPage');
     showPage('login');
   }
   

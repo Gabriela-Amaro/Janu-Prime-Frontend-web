@@ -80,6 +80,7 @@ export class AuthService {
       apiService.clearTokens();
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("userData");
+      localStorage.removeItem("currentPage"); // Limpar página salva ao fazer logout
 
       this.isAuthenticated = false;
       this.userData = null;
