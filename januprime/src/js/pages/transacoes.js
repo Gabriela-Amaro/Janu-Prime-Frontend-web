@@ -2,8 +2,59 @@ import { mockData } from '../config/mockData.js';
 import { debounce } from '../utils/debounce.js';
 import { showNotification } from '../utils/notifications.js';
 import { getMainFooter } from '../components/main-footer.js';
+import { ticketsService } from '../services/tickets.js';
+
+// Estado global da página
+let transacoesCarregadas = [];
+let transacoesFiltradas = [];
+
+/**
+ * Mapeia status do backend para exibição
+ */
+function mapearStatus(status) {
+  const statusMap = {
+    'ABERTO': { label: 'Pendente', class: 'bg-warning' },
+    'CONCLUIDO': { label: 'Aprovado', class: 'bg-success' },
+    'APROVADO': { label: 'Aprovado', class: 'bg-success' },
+    'RECUSADO': { label: 'Rejeitado', class: 'bg-danger' },
+    'CANCELADO': { label: 'Cancelado', class: 'bg-secondary' },
+  };
+  return statusMap[status] || { label: status, class: 'bg-secondary' };
+}
+
+/**
+ * Carrega transações da API
+ */
+async function carregarTransacoes() {
+  try {
+    const tickets = await ticketsService.listarTodos();
+    transacoesCarregadas = Array.isArray(tickets) ? tickets : [];
+    transacoesFiltradas = [...transacoesCarregadas];
+    atualizarExibicaoTransacoes(transacoesFiltradas);
+  } catch (error) {
+    console.error('Erro ao carregar transações:', error);
+    showNotification('Erro ao carregar transações', 'error');
+    // Mostrar mensagem de erro no tbody
+    const tbody = document.querySelector('#transacoes-table tbody') || document.querySelector('tbody');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-4">
+            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+            <h6 class="mt-2 text-muted">Erro ao carregar transações</h6>
+            <p class="text-muted small">Tente recarregar a página.</p>
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
 
 export function getTransacoesContent() {
+  // Carregar transações após renderizar
+  setTimeout(() => {
+    carregarTransacoes();
+  }, 100);
   return `
     <div class="container-fluid">
       <div class="row mb-4">
@@ -44,9 +95,10 @@ export function getTransacoesContent() {
                   <div class="dropdown">
                     <select class="form-select" id="filtroStatus" onchange="testPesquisarTransacoes()">
                       <option value="">Todos</option>
-                      <option value="pendente">Pendente</option>
-                      <option value="aprovado">Aprovado</option>
-                      <option value="rejeitado">Rejeitado</option>
+                      <option value="ABERTO">Pendente</option>
+                      <option value="APROVADO">Aprovado</option>
+                      <option value="RECUSADO">Rejeitado</option>
+                      <option value="CANCELADO">Cancelado</option>
                     </select>
                     <i class="bi bi-chevron-down dropdown-icon"></i>
                   </div>
@@ -87,40 +139,15 @@ export function getTransacoesContent() {
                       <th>Ações</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    ${mockData.transacoes.map(transacao => `
-                      <tr>
-                        <td>#${transacao.id}</td>
-                        <td>
-                          <span class="badge ${transacao.tipo === 'credito' ? 'bg-success' : 'bg-warning'}">
-                            ${transacao.tipo === 'credito' ? 'Crédito' : 'Débito'}
-                          </span>
-                        </td>
-                        <td>${transacao.cliente}</td>
-                        <td>${transacao.tipo === 'credito' ? `R$ ${transacao.valor}` : `${transacao.pontos} pts`}</td>
-                        <td>
-                          <span class="badge ${transacao.status === 'aprovado' ? 'bg-success' : transacao.status === 'pendente' ? 'bg-warning' : 'bg-danger'}">
-                            ${transacao.status}
-                          </span>
-                        </td>
-                        <td>${new Date(transacao.data).toLocaleDateString('pt-BR')}</td>
-                        <td>
-                          <div class="btn-group" role="group">
-                            <button class="btn btn-sm btn-outline-primary" onclick="visualizarTransacao(${transacao.id})" title="Visualizar">
-                              <i class="bi bi-eye"></i>
-                            </button>
-                            ${transacao.status === 'pendente' ? `
-                              <button class="btn btn-sm btn-outline-success" onclick="aprovarTransacao(${transacao.id})" title="Aprovar">
-                                <i class="bi bi-check-lg"></i>
-                              </button>
-                              <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTransacao(${transacao.id})" title="Rejeitar">
-                                <i class="bi bi-x-lg"></i>
-                              </button>
-                            ` : ''}
-                          </div>
-                        </td>
-                      </tr>
-                    `).join('')}
+                  <tbody id="transacoes-table-body">
+                    <tr>
+                      <td colspan="7" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Carregando transações...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Carregando transações...</p>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -161,15 +188,23 @@ export function aplicarFiltrosTransacoesAuto() {
   const status = document.getElementById('filtroStatus')?.value || '';
   const data = document.getElementById('filtroData')?.value || '';
   
-  let transacoesFiltradas = [...mockData.transacoes];
+  let transacoesFiltradas = [...transacoesCarregadas];
   
   // Filtro por termo de busca
   if (termo) {
-    transacoesFiltradas = transacoesFiltradas.filter(transacao => 
-      transacao.cliente.toLowerCase().includes(termo) ||
-      transacao.id.toString().includes(termo) ||
-      (transacao.produto && transacao.produto.toLowerCase().includes(termo))
-    );
+    transacoesFiltradas = transacoesFiltradas.filter(transacao => {
+      const nomeCliente = (transacao.nome_cliente || '').toLowerCase();
+      const codigo = (transacao.codigo || '').toLowerCase();
+      const nomeProduto = (transacao.nome_produto || '').toLowerCase();
+      const nomeEstabelecimento = (transacao.nome_estabelecimento || '').toLowerCase();
+      const id = transacao.id?.toString() || '';
+      
+      return nomeCliente.includes(termo) ||
+             codigo.includes(termo) ||
+             id.includes(termo) ||
+             nomeProduto.includes(termo) ||
+             nomeEstabelecimento.includes(termo);
+    });
   }
   
   // Filtro por tipo
@@ -181,15 +216,19 @@ export function aplicarFiltrosTransacoesAuto() {
   
   // Filtro por status
   if (status) {
-    transacoesFiltradas = transacoesFiltradas.filter(transacao => 
-      transacao.status === status
-    );
+    transacoesFiltradas = transacoesFiltradas.filter(transacao => {
+      // Tratar CONCLUIDO e APROVADO como "Aprovado" para o filtro
+      if (status === 'APROVADO') {
+        return transacao.status === 'CONCLUIDO' || transacao.status === 'APROVADO';
+      }
+      return transacao.status === status;
+    });
   }
   
   // Filtro por data
   if (data) {
     transacoesFiltradas = transacoesFiltradas.filter(transacao => {
-      const transacaoData = new Date(transacao.data).toISOString().split('T')[0];
+      const transacaoData = new Date(transacao.created_at).toISOString().split('T')[0];
       return transacaoData === data;
     });
   }
@@ -200,41 +239,14 @@ export function aplicarFiltrosTransacoesAuto() {
 
 // Função para atualizar a exibição das transações
 function atualizarExibicaoTransacoes(transacoes) {
-  const tbody = document.querySelector('tbody');
-  if (tbody) {
-    tbody.innerHTML = transacoes.map(transacao => `
-      <tr>
-        <td>#${transacao.id}</td>
-        <td>
-          <span class="badge ${transacao.tipo === 'credito' ? 'bg-success' : 'bg-warning'}">
-            ${transacao.tipo === 'credito' ? 'Crédito' : 'Débito'}
-          </span>
-        </td>
-        <td>${transacao.cliente}</td>
-        <td>${transacao.tipo === 'credito' ? `R$ ${transacao.valor}` : `${transacao.pontos} pts`}</td>
-        <td>
-          <span class="badge ${transacao.status === 'aprovado' ? 'bg-success' : transacao.status === 'pendente' ? 'bg-warning' : 'bg-danger'}">
-            ${transacao.status}
-          </span>
-        </td>
-        <td>${new Date(transacao.data).toLocaleDateString('pt-BR')}</td>
-        <td>
-          <div class="btn-group" role="group">
-            <button class="btn btn-sm btn-outline-primary" onclick="visualizarTransacao(${transacao.id})" title="Visualizar">
-              <i class="bi bi-eye"></i>
-            </button>
-            ${transacao.status === 'pendente' ? `
-              <button class="btn btn-sm btn-outline-success" onclick="aprovarTransacao(${transacao.id})" title="Aprovar">
-                <i class="bi bi-check-lg"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTransacao(${transacao.id})" title="Rejeitar">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            ` : ''}
-          </div>
-        </td>
-      </tr>
-    `).join('') || `
+  const tbody = document.querySelector('#transacoes-table-body') || document.querySelector('tbody');
+  if (!tbody) {
+    console.error('Tbody não encontrado');
+    return;
+  }
+  
+  if (transacoes.length === 0) {
+    tbody.innerHTML = `
       <tr>
         <td colspan="7" class="text-center py-4">
           <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
@@ -243,7 +255,61 @@ function atualizarExibicaoTransacoes(transacoes) {
         </td>
       </tr>
     `;
+    return;
   }
+  
+  const html = transacoes.map(transacao => {
+    const tipo = transacao.tipo; // 'credito' ou 'debito'
+    const statusInfo = mapearStatus(transacao.status);
+    const nomeCliente = transacao.nome_cliente || 'N/A';
+    const data = new Date(transacao.created_at);
+    const isPendente = transacao.status === 'ABERTO';
+    
+    // Determinar valor/pontos baseado no tipo
+    let valorPontos = '';
+    if (tipo === 'credito') {
+      valorPontos = `R$ ${parseFloat(transacao.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } else {
+      valorPontos = `${transacao.pontos || 0} pts`;
+    }
+    
+    return `
+      <tr>
+        <td>#${transacao.codigo || transacao.id}</td>
+        <td>
+          <span class="badge ${tipo === 'credito' ? 'bg-success' : 'bg-warning'}">
+            ${tipo === 'credito' ? 'Crédito' : 'Débito'}
+          </span>
+        </td>
+        <td>${nomeCliente}</td>
+        <td>${valorPontos}</td>
+        <td>
+          <span class="badge ${statusInfo.class}">
+            ${statusInfo.label}
+          </span>
+        </td>
+        <td>${data.toLocaleDateString('pt-BR')}</td>
+        <td>
+          <div class="btn-group" role="group">
+            <button class="btn btn-sm btn-outline-primary" onclick="visualizarTransacao(${transacao.id}, '${tipo}')" title="Visualizar">
+              <i class="bi bi-eye"></i>
+            </button>
+            ${isPendente ? `
+              <button class="btn btn-sm btn-outline-success" onclick="aprovarTransacao(${transacao.id}, '${tipo}')" title="Aprovar">
+                <i class="bi bi-check-lg"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="rejeitarTransacao(${transacao.id}, '${tipo}')" title="Rejeitar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  tbody.innerHTML = html;
+  transacoesFiltradas = transacoes;
 }
 
 // Função para limpar todos os filtros
@@ -258,5 +324,51 @@ export function limparFiltrosTransacoes() {
   if (statusSelect) statusSelect.value = '';
   if (dataInput) dataInput.value = '';
   
+  transacoesFiltradas = [...transacoesCarregadas];
   aplicarFiltrosTransacoesAuto();
 }
+
+// Funções para manipular transações
+export async function aprovarTransacao(id, tipo) {
+  try {
+    if (tipo === 'credito') {
+      await ticketsService.aprovarCredito(id);
+    } else {
+      await ticketsService.aprovarDebito(id);
+    }
+    showNotification('Transação aprovada com sucesso!', 'success');
+    await carregarTransacoes();
+  } catch (error) {
+    console.error('Erro ao aprovar transação:', error);
+    showNotification(`Erro ao aprovar transação: ${error.message || 'Erro desconhecido'}`, 'error');
+  }
+}
+
+export async function rejeitarTransacao(id, tipo) {
+  const motivo = prompt('Informe o motivo da recusa (opcional):') || '';
+  
+  try {
+    if (tipo === 'credito') {
+      await ticketsService.recusarCredito(id, motivo);
+    } else {
+      await ticketsService.recusarDebito(id);
+    }
+    showNotification('Transação recusada com sucesso!', 'success');
+    await carregarTransacoes();
+  } catch (error) {
+    console.error('Erro ao recusar transação:', error);
+    showNotification(`Erro ao recusar transação: ${error.message || 'Erro desconhecido'}`, 'error');
+  }
+}
+
+export function visualizarTransacao(id, tipo) {
+  // Por enquanto apenas mostrar notificação
+  showNotification('Visualização de detalhes será implementada em breve', 'info');
+  console.log('Visualizar transação:', id, tipo);
+}
+
+// Exportar funções para escopo global
+window.aprovarTransacao = aprovarTransacao;
+window.rejeitarTransacao = rejeitarTransacao;
+window.visualizarTransacao = visualizarTransacao;
+window.carregarTransacoes = carregarTransacoes;

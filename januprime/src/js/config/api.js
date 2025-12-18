@@ -10,13 +10,22 @@ class ApiService {
     const url = `${this.baseURL}${endpoint}`;
 
     // Configuração padrão
+    // Se não especificar Content-Type nos headers, usar JSON como padrão
+    const defaultHeaders = {};
+    if (!options.skipContentType) {
+      defaultHeaders["Content-Type"] = "application/json";
+    }
+    
     const config = {
       headers: {
-        "Content-Type": "application/json",
+        ...defaultHeaders,
         ...options.headers,
       },
       ...options,
     };
+    
+    // Remover skipContentType se existir
+    delete config.skipContentType;
     // Adicionar token JWT se o usuário estiver autenticado
     const token = this.getAccessToken();
     if (token && !options.skipAuth) {
@@ -61,24 +70,36 @@ class ApiService {
     return this.request(endpoint, { ...options, method: "GET" });
   }
   post(endpoint, data, options = {}) {
+    // Se data for FormData, não fazer JSON.stringify e remover Content-Type
+    const isFormData = data instanceof FormData;
+    
     return this.request(endpoint, {
       ...options,
       method: "POST",
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      skipContentType: isFormData, // Pular Content-Type padrão para FormData
     });
   }
   put(endpoint, data, options = {}) {
+    // Se data for FormData, não fazer JSON.stringify e remover Content-Type
+    const isFormData = data instanceof FormData;
+    
     return this.request(endpoint, {
       ...options,
       method: "PUT",
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      skipContentType: isFormData,
     });
   }
   patch(endpoint, data, options = {}) {
+    // Se data for FormData, não fazer JSON.stringify e remover Content-Type
+    const isFormData = data instanceof FormData;
+    
     return this.request(endpoint, {
       ...options,
       method: "PATCH",
-      body: JSON.stringify(data),
+      body: isFormData ? data : JSON.stringify(data),
+      skipContentType: isFormData,
     });
   }
   delete(endpoint, options = {}) {

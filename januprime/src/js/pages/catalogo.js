@@ -2,8 +2,72 @@ import { mockData } from '../config/mockData.js';
 import { debounce } from '../utils/debounce.js';
 import { showNotification } from '../utils/notifications.js';
 import { getMainFooter } from '../components/main-footer.js';
+import { produtosService } from '../services/produtos.js';
+import { APP_CONFIG } from '../config/app.js';
+
+// Estado global da página
+let produtosCarregados = [];
+let produtosFiltrados = [];
+
+/**
+ * Constrói URL completa da imagem do produto
+ */
+function getImagemUrl(imagemPath) {
+  if (!imagemPath) {
+    return '/assets/images/logo.svg'; // Imagem padrão
+  }
+  
+  // Se já for uma URL completa, retornar como está
+  if (imagemPath.startsWith('http://') || imagemPath.startsWith('https://')) {
+    return imagemPath;
+  }
+  
+  // Construir URL completa usando a base da API
+  // O Django geralmente serve arquivos de mídia em /media/
+  const baseUrl = APP_CONFIG.apiUrl.replace('/api', '');
+  
+  // Se o caminho já começar com /media/, usar diretamente
+  if (imagemPath.startsWith('/media/')) {
+    return `${baseUrl}${imagemPath}`;
+  }
+  
+  // Se não, adicionar /media/ antes do caminho
+  const mediaPath = imagemPath.startsWith('/') ? imagemPath : `/${imagemPath}`;
+  return `${baseUrl}/media${mediaPath}`;
+}
+
+/**
+ * Carrega produtos da API
+ */
+async function carregarProdutos() {
+  try {
+    const response = await produtosService.listar();
+    produtosCarregados = Array.isArray(response) ? response : response.results || [];
+    produtosFiltrados = [...produtosCarregados];
+    atualizarExibicaoProdutos(produtosFiltrados);
+  } catch (error) {
+    console.error('Erro ao carregar produtos:', error);
+    showNotification('Erro ao carregar produtos', 'error');
+    // Mostrar mensagem de erro no container
+    const container = document.getElementById('produtos-container');
+    if (container) {
+      container.innerHTML = `
+        <div class="col-12 text-center py-5">
+          <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+          <h5 class="mt-3 text-muted">Erro ao carregar produtos</h5>
+          <p class="text-muted">Tente recarregar a página.</p>
+        </div>
+      `;
+    }
+  }
+}
 
 export function getCatalogoContent() {
+  // Carregar produtos após renderizar
+  setTimeout(() => {
+    carregarProdutos();
+  }, 100);
+  
   return `
     <div class="container-fluid">
       <div class="row mb-4">
@@ -12,7 +76,7 @@ export function getCatalogoContent() {
             <h1 class="text-gradient mb-0">Catálogo de Produtos</h1>
             <p class="text-muted">Gerencie os produtos disponíveis para resgate</p>
           </div>
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#produtoModal">
+          <button class="btn btn-primary" onclick="abrirModalProduto()">
             <i class="bi bi-plus-lg me-2"></i>Adicionar Produto
           </button>
         </div>
@@ -69,32 +133,12 @@ export function getCatalogoContent() {
       </div>
       
       <div class="row" id="produtos-container">
-        ${mockData.produtos.map(produto => `
-          <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <h5 class="card-title">${produto.nome}</h5>
-                  <span class="badge ${produto.ativo ? 'bg-success' : 'bg-secondary'}">
-                    ${produto.ativo ? 'Ativo' : 'Inativo'}
-                  </span>
-                </div>
-                <p class="card-text">${produto.descricao}</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="h6 text-primary mb-0">${produto.pontos} pontos</span>
-                  <div>
-                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editarProduto(${produto.id})">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="excluirProduto(${produto.id})">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando produtos...</span>
           </div>
-        `).join('')}
+          <p class="mt-3 text-muted">Carregando produtos...</p>
+        </div>
       </div>
     </div>
     
@@ -102,14 +146,59 @@ export function getCatalogoContent() {
   `;
 }
 
-export function editarProduto(id) {
-  console.log('Editando produto:', id);
-  showNotification('Função de edição será implementada em breve', 'info');
+export async function editarProduto(id) {
+  try {
+    const produto = await produtosService.obter(id);
+    
+    // Preencher modal com dados do produto
+    const nomeInput = document.getElementById('produtoNome');
+    const descricaoInput = document.getElementById('produtoDescricao');
+    const precoInput = document.getElementById('produtoPreco');
+    const ativoCheckbox = document.getElementById('produtoAtivo');
+    const modalTitle = document.getElementById('produtoModalLabel');
+    
+    if (nomeInput) nomeInput.value = produto.nome || '';
+    if (descricaoInput) descricaoInput.value = produto.descricao || '';
+    if (precoInput && produto.preco) {
+      // Formatar preço para exibição
+      const precoFormatado = parseFloat(produto.preco).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      precoInput.value = precoFormatado;
+    }
+    if (ativoCheckbox) ativoCheckbox.checked = produto.ativo !== false;
+    if (modalTitle) modalTitle.textContent = 'Editar Produto';
+    
+    // Armazenar ID do produto sendo editado
+    window.produtoEditandoId = id;
+    
+    // Abrir modal
+    const modalElement = document.getElementById('produtoModal');
+    if (modalElement) {
+      const modal = new window.bootstrap.Modal(modalElement);
+      modal.show();
+    }
+  } catch (error) {
+    console.error('Erro ao carregar produto para edição:', error);
+    showNotification('Erro ao carregar dados do produto', 'error');
+  }
 }
 
-export function excluirProduto(id) {
-  console.log('Excluindo produto:', id);
-  showNotification('Produto removido com sucesso! O item foi excluído do catálogo.', 'success');
+export async function excluirProduto(id) {
+  if (!confirm('Tem certeza que deseja excluir este produto?')) {
+    return;
+  }
+  
+  try {
+    await produtosService.remover(id);
+    showNotification('Produto removido com sucesso!', 'success');
+    // Recarregar produtos
+    await carregarProdutos();
+  } catch (error) {
+    console.error('Erro ao excluir produto:', error);
+    showNotification(`Erro ao excluir produto: ${error.message || 'Erro desconhecido'}`, 'error');
+  }
 }
 
 // Função de busca automática com debounce
@@ -133,8 +222,9 @@ window.testPesquisarProdutos = function() {
   }
 };
 
-// Exportar função para escopo global
+// Exportar funções para escopo global
 window.limparFiltros = limparFiltros;
+window.carregarProdutos = carregarProdutos;
 
 // Função para aplicar filtros automaticamente
 export function aplicarFiltrosAuto() {
@@ -143,36 +233,38 @@ export function aplicarFiltrosAuto() {
     const status = document.getElementById('filtroStatus')?.value || '';
     const pontos = document.getElementById('filtroPontos')?.value || '';
     
-    let produtosFiltrados = [...mockData.produtos];
+    // Filtrar produtos carregados
+    let produtosFiltrados = [...produtosCarregados];
     
     // Filtro por termo de busca
     if (termo) {
       produtosFiltrados = produtosFiltrados.filter(produto => 
-        produto.nome.toLowerCase().includes(termo) ||
-        produto.descricao.toLowerCase().includes(termo)
+        (produto.nome && produto.nome.toLowerCase().includes(termo)) ||
+        (produto.descricao && produto.descricao.toLowerCase().includes(termo))
       );
     }
     
     // Filtro por status
     if (status) {
       produtosFiltrados = produtosFiltrados.filter(produto => 
-        (status === 'ativo' && produto.ativo) || 
-        (status === 'inativo' && !produto.ativo)
+        (status === 'ativo' && produto.ativo === true) || 
+        (status === 'inativo' && produto.ativo === false)
       );
     }
     
     // Filtro por faixa de pontos
     if (pontos) {
       produtosFiltrados = produtosFiltrados.filter(produto => {
+        const pontosProduto = produto.pontos || 0;
         switch (pontos) {
           case '0-100':
-            return produto.pontos >= 0 && produto.pontos <= 100;
+            return pontosProduto >= 0 && pontosProduto <= 100;
           case '101-500':
-            return produto.pontos >= 101 && produto.pontos <= 500;
+            return pontosProduto >= 101 && pontosProduto <= 500;
           case '501-1000':
-            return produto.pontos >= 501 && produto.pontos <= 1000;
+            return pontosProduto >= 501 && pontosProduto <= 1000;
           case '1000+':
-            return produto.pontos > 1000;
+            return pontosProduto > 1000;
           default:
             return true;
         }
@@ -188,64 +280,74 @@ export function aplicarFiltrosAuto() {
 
 // Função para atualizar a exibição dos produtos
 function atualizarExibicaoProdutos(produtos) {
-  // Procurar pelo container de produtos usando ID específico
-  let container = document.getElementById('produtos-container');
+  const container = document.getElementById('produtos-container');
+  
   if (!container) {
-    // Fallback: procurar pelo container de produtos de forma mais robusta
-    container = document.querySelector('.container-fluid .row:last-child');
-    if (!container) {
-      // Se não encontrar, procurar por qualquer row que contenha cards de produtos
-      const rows = document.querySelectorAll('.row');
-      for (let row of rows) {
-        if (row.querySelector('.card')) {
-          container = row;
-          break;
-        }
-      }
-    }
+    console.error('Container de produtos não encontrado');
+    return;
   }
   
-  console.log('Container encontrado:', container);
-  
-  if (container) {
-    const html = produtos.length > 0 ? produtos.map(produto => `
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <h5 class="card-title">${produto.nome}</h5>
-              <span class="badge ${produto.ativo ? 'bg-success' : 'bg-secondary'}">
-                ${produto.ativo ? 'Ativo' : 'Inativo'}
-              </span>
-            </div>
-            <p class="card-text">${produto.descricao}</p>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="h6 text-primary mb-0">${produto.pontos} pontos</span>
-              <div>
-                <button class="btn btn-sm btn-outline-primary me-2" onclick="editarProduto(${produto.id})">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="excluirProduto(${produto.id})">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('') : `
+  if (produtos.length === 0) {
+    container.innerHTML = `
       <div class="col-12 text-center py-5">
         <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
         <h5 class="mt-3 text-muted">Nenhum produto encontrado!</h5>
         <p class="text-muted">Tente ajustar os filtros de busca.</p>
       </div>
     `;
-    
-    container.innerHTML = html;
-    console.log('Produtos atualizados:', produtos.length);
-  } else {
-    console.error('Container não encontrado para atualizar produtos');
+    return;
   }
+  
+  const html = produtos.map(produto => {
+    const temImagem = produto.imagem && produto.imagem.trim() !== '';
+    const imagemUrl = temImagem ? getImagemUrl(produto.imagem) : null;
+    const descricao = produto.descricao || 'Sem descrição';
+    const pontos = produto.pontos || 0;
+    
+    return `
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+        <div class="card h-100 shadow-sm product-card">
+          <div class="card-img-top-container" style="aspect-ratio: 1; overflow: hidden; background-color: #333; display: flex; align-items: center; justify-content: center; position: relative;">
+            ${temImagem ? `
+              <img 
+                src="${imagemUrl}" 
+                alt="${produto.nome}" 
+                class="card-img-top" 
+                style="object-fit: cover; width: 100%; height: 100%;"
+                onerror="this.parentElement.innerHTML='<i class=\\'bi bi-image text-muted\\' style=\\'font-size: 3rem; opacity: 0.5;\\'></i>';"
+              >
+            ` : `
+              <i class="bi bi-image text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+            `}
+          </div>
+          <div class="card-body d-flex flex-column" style="padding: 1rem;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="card-title mb-0" style="font-size: 0.95rem; font-weight: 600;">${produto.nome}</h6>
+              <span class="badge ${produto.ativo ? 'bg-success' : 'bg-secondary'}" style="font-size: 0.7rem;">
+                ${produto.ativo ? 'Ativo' : 'Inativo'}
+              </span>
+            </div>
+            <p class="card-text text-muted small flex-grow-1" style="min-height: 35px; font-size: 0.8rem; margin-bottom: 0.75rem;">${descricao}</p>
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+              <span class="fw-bold text-white mb-0" style="font-size: 1rem; color: #ffffff !important;">
+                <i class="bi bi-star-fill text-warning me-1" style="color: #fbbf24 !important;"></i>${pontos} pontos
+              </span>
+              <div>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editarProduto(${produto.id})" title="Editar" style="padding: 0.25rem 0.5rem;">
+                  <i class="bi bi-pencil" style="font-size: 0.85rem;"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="excluirProduto(${produto.id})" title="Excluir" style="padding: 0.25rem 0.5rem;">
+                  <i class="bi bi-trash" style="font-size: 0.85rem;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  container.innerHTML = html;
 }
 
 // Função para limpar todos os filtros
@@ -258,6 +360,7 @@ export function limparFiltros() {
   if (statusSelect) statusSelect.value = '';
   if (pontosSelect) pontosSelect.value = '';
   
+  produtosFiltrados = [...produtosCarregados];
   aplicarFiltrosAuto();
 }
 

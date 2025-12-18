@@ -1298,6 +1298,42 @@ hr {
   height: 100%;
 }
 
+/* Estilos específicos para cards de produtos do catálogo */
+.product-card {
+  transition: all var(--transition-normal);
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.product-card .card-img-top-container {
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.product-card .card-img-top-container img {
+  transition: transform var(--transition-normal);
+}
+
+.product-card:hover .card-img-top-container img {
+  transform: scale(1.05);
+}
+
+/* Garantir que o ícone de placeholder tenha tamanho apropriado */
+.product-card .card-img-top-container .bi-image {
+  font-size: 3rem !important;
+  opacity: 0.5;
+  color: #94a3b8 !important;
+}
+
+/* Estilos para os pontos - destacar em branco */
+.product-card .text-white {
+  color: #ffffff !important;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 /* Estilos para botões de ação */
 .btn-group .btn {
   border-radius: 0;

@@ -22,7 +22,7 @@ import { editarProduto, excluirProduto, pesquisarProdutos, aplicarFiltros, aplic
 import { pesquisarAnuncios, aplicarFiltrosAnuncios, aplicarFiltrosAnunciosAuto, limparFiltrosAnuncios } from './pages/anuncios.js';
 import { pesquisarFuncionarios, aplicarFiltrosFuncionarios, aplicarFiltrosFuncionariosAuto, limparFiltrosFuncionarios } from './pages/funcionarios.js';
 import { atualizarMetricas, aplicarFiltrosMetricas, exportarMetricas, gerarRelatorio, aplicarFiltrosMetricasAuto, limparFiltrosMetricas } from './pages/metricas.js';
-import { aplicarFiltrosTransacoesAuto, limparFiltrosTransacoes } from './pages/transacoes.js';
+import { aplicarFiltrosTransacoesAuto, limparFiltrosTransacoes, aprovarTransacao, rejeitarTransacao, visualizarTransacao } from './pages/transacoes.js';
 import { aplicarFiltrosAuditoriaAuto, limparFiltrosAuditoria } from './pages/auditoria.js';
 
 /**
@@ -151,20 +151,7 @@ function excluirAnuncio(id) {
   showNotification('Anúncio removido com sucesso! A promoção foi excluída do sistema.', 'success');
 }
 
-function visualizarTransacao(id) {
-  console.log('Visualizando transação:', id);
-  showNotification('Modal de visualização será implementado em breve', 'info');
-}
 
-function aprovarTransacao(id) {
-  console.log('Aprovando transação:', id);
-  showNotification('Transação aprovada com sucesso! O ticket foi processado.', 'success');
-}
-
-function rejeitarTransacao(id) {
-  console.log('Rejeitando transação:', id);
-  showNotification('Transação rejeitada! O ticket foi negado e não será processado.', 'warning');
-}
 
 function filtrarTransacoes() {
   console.log('Filtrando transações...');
@@ -214,7 +201,7 @@ window.aplicarFiltrosAnuncios = aplicarFiltrosAnuncios;
 window.aplicarFiltrosAnunciosAuto = aplicarFiltrosAnunciosAuto;
 window.limparFiltrosAnuncios = limparFiltrosAnuncios;
 
-// Funções de transações
+// Funções de transações (já importadas acima)
 window.visualizarTransacao = visualizarTransacao;
 window.aprovarTransacao = aprovarTransacao;
 window.rejeitarTransacao = rejeitarTransacao;

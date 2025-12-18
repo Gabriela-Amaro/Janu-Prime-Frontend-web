@@ -50,10 +50,20 @@ class AnunciosService {
 
   /**
    * Criar novo anúncio
+   * @param {Object} dados - Dados do anúncio { data_expiracao, imagem (File opcional) }
    */
   async criar(dados) {
     try {
-      return await apiService.post(this.endpoint, dados);
+      // Se houver imagem, usar FormData
+      if (dados.imagem instanceof File) {
+        const formData = new FormData();
+        formData.append('data_expiracao', dados.data_expiracao);
+        formData.append('imagem', dados.imagem);
+        return await apiService.post(this.endpoint, formData);
+      } else {
+        // Sem imagem, usar JSON normal
+        return await apiService.post(this.endpoint, dados);
+      }
     } catch (error) {
       console.error("Erro ao criar anúncio:", error);
       throw error;
@@ -62,10 +72,23 @@ class AnunciosService {
 
   /**
    * Atualizar anúncio existente
+   * @param {Number} id - ID do anúncio
+   * @param {Object} dados - Dados do anúncio { data_expiracao, imagem (File opcional) }
    */
   async atualizar(id, dados) {
     try {
-      return await apiService.patch(`${this.endpoint}${id}/`, dados);
+      // Se houver imagem, usar FormData
+      if (dados.imagem instanceof File) {
+        const formData = new FormData();
+        if (dados.data_expiracao) {
+          formData.append('data_expiracao', dados.data_expiracao);
+        }
+        formData.append('imagem', dados.imagem);
+        return await apiService.patch(`${this.endpoint}${id}/`, formData);
+      } else {
+        // Sem imagem, usar JSON normal
+        return await apiService.patch(`${this.endpoint}${id}/`, dados);
+      }
     } catch (error) {
       console.error("Erro ao atualizar anúncio:", error);
       throw error;

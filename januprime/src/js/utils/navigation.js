@@ -62,6 +62,13 @@ export function showPage(pageName) {
     }, 0);
   }
   
+  // Carregar produtos quando acessar a página de catálogo
+  if (pageName === 'catalogo' && typeof window.carregarProdutos === 'function') {
+    setTimeout(() => {
+      window.carregarProdutos();
+    }, 100);
+  }
+  
   // Fecha o offcanvas se estiver aberto
   const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasNavbar'));
   if (offcanvas) {

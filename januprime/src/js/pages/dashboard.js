@@ -1197,6 +1197,9 @@ function abrirModalProduto() {
     form.reset();
   }
   
+  // Limpar ID de edição
+  window.produtoEditandoId = null;
+  
   // Garantir que o checkbox ativo esteja marcado por padrão
   const ativoCheckbox = document.getElementById("produtoAtivo");
   if (ativoCheckbox) {
@@ -1221,16 +1224,22 @@ function abrirModalProduto() {
  * Abre o modal de anúncio
  */
 function abrirModalAnuncio() {
+  // Limpar campos
+  const dataExpiracaoInput = document.getElementById("anuncioDataExpiracao");
+  const imagemInput = document.getElementById("anuncioImagem");
+  const modalTitle = document.getElementById("anuncioModalLabel");
+  
+  if (dataExpiracaoInput) dataExpiracaoInput.value = '';
+  if (imagemInput) imagemInput.value = '';
+  if (modalTitle) modalTitle.textContent = 'Criar Anúncio';
+  
+  // Limpar ID de edição
+  window.anuncioEditandoId = null;
+  
   // Limpar formulário
   const form = document.getElementById("anuncioForm");
   if (form) {
     form.reset();
-  }
-  
-  // Atualizar título do modal
-  const modalTitle = document.getElementById("anuncioModalLabel");
-  if (modalTitle) {
-    modalTitle.textContent = "Criar Anúncio";
   }
   
   // Abrir modal usando Bootstrap
@@ -1400,13 +1409,14 @@ function parseCurrency(value) {
 }
 
 /**
- * Salva um novo produto e navega para a página de catálogo
+ * Salva um novo produto ou atualiza um existente
  */
 async function salvarProdutoDashboard() {
   try {
     const nome = document.getElementById("produtoNome")?.value.trim();
     const descricao = document.getElementById("produtoDescricao")?.value.trim();
     const precoInput = document.getElementById("produtoPreco");
+    const produtoId = window.produtoEditandoId; // ID se estiver editando
     
     if (!nome) {
       showNotification("Nome do produto é obrigatório", "error");
@@ -1437,8 +1447,17 @@ async function salvarProdutoDashboard() {
       ativo: ativo,
     };
 
-    // Criar produto via API
-    await produtosService.criar(dadosProduto);
+    // Criar ou atualizar produto via API
+    if (produtoId) {
+      await produtosService.atualizar(produtoId, dadosProduto);
+      showNotification("Produto atualizado com sucesso!", "success");
+    } else {
+      await produtosService.criar(dadosProduto);
+      showNotification("Produto criado com sucesso!", "success");
+    }
+
+    // Limpar ID de edição
+    window.produtoEditandoId = null;
 
     // Fechar modal
     const modalElement = document.getElementById("produtoModal");
@@ -1448,17 +1467,20 @@ async function salvarProdutoDashboard() {
         modal.hide();
       }
     }
-
-    showNotification("Produto criado com sucesso!", "success");
     
-    // Navegar para a página de catálogo após um pequeno delay
-    setTimeout(() => {
-      showPage("catalogo");
-    }, 500);
+    // Recarregar produtos se estiver na página de catálogo
+    if (typeof window.carregarProdutos === 'function') {
+      await window.carregarProdutos();
+    } else {
+      // Se não estiver na página de catálogo, navegar para lá
+      setTimeout(() => {
+        showPage("catalogo");
+      }, 500);
+    }
   } catch (error) {
-    console.error("Erro ao criar produto:", error);
+    console.error("Erro ao salvar produto:", error);
     showNotification(
-      `Erro ao criar produto: ${error.message || "Erro desconhecido"}`,
+      `Erro ao salvar produto: ${error.message || "Erro desconhecido"}`,
       "error"
     );
   }
@@ -1471,6 +1493,7 @@ async function salvarAnuncioDashboard() {
   try {
     const dataExpiracaoInput = document.getElementById("anuncioDataExpiracao");
     const imagemInput = document.getElementById("anuncioImagem");
+    const anuncioId = window.anuncioEditandoId; // ID se estiver editando
     
     if (!dataExpiracaoInput || !dataExpiracaoInput.value) {
       showNotification("Data de expiração é obrigatória", "error");
@@ -1484,17 +1507,26 @@ async function salvarAnuncioDashboard() {
       data_expiracao: dataExpiracao,
     };
 
-    // Se houver imagem selecionada, adicionar ao FormData
-    // Por enquanto, vamos criar sem imagem pois o upload de arquivo requer FormData
-    // TODO: Implementar upload de imagem quando necessário
+    // Se houver imagem selecionada, adicionar ao objeto
     if (imagemInput && imagemInput.files && imagemInput.files.length > 0) {
-      // Por enquanto, apenas avisar que a imagem será implementada depois
-      // O backend aceita imagem opcional, então podemos criar sem ela
-      console.log("Imagem selecionada, mas upload será implementado posteriormente");
+      dadosAnuncio.imagem = imagemInput.files[0];
     }
 
-    // Criar anúncio via API
-    await anunciosService.criar(dadosAnuncio);
+    // Criar ou atualizar anúncio via API
+    if (anuncioId) {
+      await anunciosService.atualizar(anuncioId, dadosAnuncio);
+      showNotification("Anúncio atualizado com sucesso!", "success");
+    } else {
+      await anunciosService.criar(dadosAnuncio);
+      showNotification("Anúncio criado com sucesso!", "success");
+    }
+
+    // Limpar ID de edição
+    window.anuncioEditandoId = null;
+
+    // Limpar campos do formulário
+    if (dataExpiracaoInput) dataExpiracaoInput.value = '';
+    if (imagemInput) imagemInput.value = '';
 
     // Fechar modal
     const modalElement = document.getElementById("anuncioModal");
@@ -1504,17 +1536,20 @@ async function salvarAnuncioDashboard() {
         modal.hide();
       }
     }
-
-    showNotification("Anúncio criado com sucesso!", "success");
     
-    // Navegar para a página de anúncios após um pequeno delay
-    setTimeout(() => {
-      showPage("anuncios");
-    }, 500);
+    // Recarregar anúncios se estiver na página de anúncios
+    if (typeof window.carregarAnuncios === 'function') {
+      await window.carregarAnuncios();
+    } else {
+      // Navegar para a página de anúncios após um pequeno delay
+      setTimeout(() => {
+        showPage("anuncios");
+      }, 500);
+    }
   } catch (error) {
-    console.error("Erro ao criar anúncio:", error);
+    console.error("Erro ao salvar anúncio:", error);
     showNotification(
-      `Erro ao criar anúncio: ${error.message || "Erro desconhecido"}`,
+      `Erro ao salvar anúncio: ${error.message || "Erro desconhecido"}`,
       "error"
     );
   }
