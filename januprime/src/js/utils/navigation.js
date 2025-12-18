@@ -46,6 +46,14 @@ export function showPage(pageName) {
   content.innerHTML = getPageContent(pageName);
   content.classList.add('fade-in-up');
   
+  // Carrega dados assíncronos para páginas específicas
+  if (pageName === 'dashboard' && typeof window.carregarDadosDashboard === 'function') {
+    // Usar setTimeout para garantir que o DOM foi renderizado
+    setTimeout(() => {
+      window.carregarDadosDashboard();
+    }, 0);
+  }
+  
   // Fecha o offcanvas se estiver aberto
   const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasNavbar'));
   if (offcanvas) {

@@ -1,7 +1,23 @@
-import { APP_CONFIG } from "../config/app.js";
 import { getMainFooter } from "../components/main-footer.js";
+import { showNotification } from "../utils/notifications.js";
+
+// Função para obter dados do usuário logado
+function getUserData() {
+  try {
+    const userData = localStorage.getItem("userData");
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Erro ao obter dados do usuário:", error);
+    return null;
+  }
+}
 
 export function getPerfilContent() {
+  const userData = getUserData();
+  const nomeEstabelecimento = userData?.estabelecimento?.nome || "Nome do Estabelecimento";
+  const emailUsuario = userData?.email || "email@exemplo.com";
+  const nomeUsuario = userData?.nome || "Usuário";
+  
   return `
     <div class="container-fluid">
       <div class="row mb-4">
@@ -23,45 +39,45 @@ export function getPerfilContent() {
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaNome" class="form-label">Nome da Empresa</label>
-                      <input type="text" class="form-control" id="empresaNome" value="${APP_CONFIG.empresa.nome}">
+                      <input type="text" class="form-control" id="empresaNome" value="${nomeEstabelecimento}">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaCnpj" class="form-label">CNPJ</label>
-                      <input type="text" class="form-control" id="empresaCnpj" value="${APP_CONFIG.empresa.cnpj}">
+                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00">
                     </div>
                   </div>
                 </div>
                 
                 <div class="mb-3">
                   <label for="empresaEndereco" class="form-label">Endereço</label>
-                  <input type="text" class="form-control" id="empresaEndereco" value="${APP_CONFIG.empresa.endereco}">
+                  <input type="text" class="form-control" id="empresaEndereco" placeholder="Rua, número - Bairro, Cidade-UF">
                 </div>
                 
                 <div class="row">
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaTelefone" class="form-label">Telefone</label>
-                      <input type="text" class="form-control" id="empresaTelefone" value="${APP_CONFIG.empresa.telefone}">
+                      <input type="text" class="form-control" id="empresaTelefone" placeholder="(00) 00000-0000">
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaEmail" class="form-label">E-mail</label>
-                      <input type="email" class="form-control" id="empresaEmail" value="${APP_CONFIG.empresa.email}">
+                      <input type="email" class="form-control" id="empresaEmail" value="${emailUsuario}">
                     </div>
                   </div>
                 </div>
                 
                 <div class="mb-3">
                   <label for="empresaDescricao" class="form-label">Descrição</label>
-                  <textarea class="form-control" id="empresaDescricao" rows="4" placeholder="Descreva seu estabelecimento...">A melhor pizza da cidade! Ambiente familiar e acolhedor.</textarea>
+                  <textarea class="form-control" id="empresaDescricao" rows="4" placeholder="Descreva seu estabelecimento..."></textarea>
                 </div>
                 
                 <div class="mb-3">
                   <label for="empresaHorario" class="form-label">Horário de Funcionamento</label>
-                  <input type="text" class="form-control" id="empresaHorario" value="Ter-Dom: 18h-23h">
+                  <input type="text" class="form-control" id="empresaHorario" placeholder="Seg-Sex: 08h-18h">
                 </div>
                 
                 <div class="mb-3">
@@ -86,10 +102,10 @@ export function getPerfilContent() {
               <div class="mb-3">
                 <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="100" height="100">
               </div>
-              <h5 id="previewNome">${APP_CONFIG.empresa.nome}</h5>
-              <p class="text-muted" id="previewEndereco">${APP_CONFIG.empresa.endereco}</p>
-              <p class="text-muted" id="previewHorario">Ter-Dom: 18h-23h</p>
-              <p class="small" id="previewDescricao">A melhor pizza da cidade! Ambiente familiar e acolhedor.</p>
+              <h5 id="previewNome">${nomeEstabelecimento}</h5>
+              <p class="text-muted small">${nomeUsuario} - ${userData?.tipo_usuario || "Administrador"}</p>
+              <p class="text-muted" id="previewEndereco">Endereço não cadastrado</p>
+              <p class="text-muted" id="previewHorario">Horário não cadastrado</p>
             </div>
           </div>
           
@@ -105,38 +121,9 @@ export function getPerfilContent() {
             </div>
             <div class="card-body">
               <div class="row" id="galeria-fotos">
-                <!-- Fotos existentes -->
-                <div class="col-6 mb-3">
-                  <div class="position-relative">
-                    <img src="/assets/images/logo.svg" alt="Foto do estabelecimento" class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;">
-                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removerFoto(1)" title="Remover foto">
-                      <i class="bi bi-x"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-6 mb-3">
-                  <div class="position-relative">
-                    <img src="/assets/images/logo.svg" alt="Foto do estabelecimento" class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;">
-                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removerFoto(2)" title="Remover foto">
-                      <i class="bi bi-x"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-6 mb-3">
-                  <div class="position-relative">
-                    <img src="/assets/images/logo.svg" alt="Foto do estabelecimento" class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;">
-                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removerFoto(3)" title="Remover foto">
-                      <i class="bi bi-x"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-6 mb-3">
-                  <div class="position-relative">
-                    <img src="/assets/images/logo.svg" alt="Foto do estabelecimento" class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;">
-                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removerFoto(4)" title="Remover foto">
-                      <i class="bi bi-x"></i>
-                    </button>
-                  </div>
+                <div class="col-12 text-center py-4">
+                  <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+                  <p class="text-muted mt-2">Nenhuma foto cadastrada</p>
                 </div>
               </div>
               
@@ -172,3 +159,8 @@ export function removerFoto(id) {
   console.log("Removendo foto:", id);
   showNotification("Foto removida com sucesso!", "success");
 }
+
+// Exportar para escopo global
+window.salvarPerfil = salvarPerfil;
+window.adicionarFoto = adicionarFoto;
+window.removerFoto = removerFoto;

@@ -2,6 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/style.css";
 
 import * as bootstrap from "bootstrap";
+window.bootstrap = bootstrap; // Exportar para acesso global em outros módulos
 import { showPage } from './utils/navigation.js';
 import { showNotification } from './utils/notifications.js';
 import { authService, requireAuth, logout } from './services/auth.js';
