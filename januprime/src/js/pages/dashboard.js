@@ -83,10 +83,11 @@ function atualizarPerfilEmpresaUI() {
  */
 async function carregarDadosDashboard() {
   try {
-    // Carregar dados do estabelecimento em paralelo
+    // Carregar todos os dados em paralelo
     await Promise.all([
       carregarDadosEstabelecimento(),
-      // Carregar tickets (a API não filtra por status, filtramos localmente)
+      
+      // Carregar tickets
       (async () => {
         const responseDebito = await ticketsService.listarDebito();
         const responseCredito = await ticketsService.listarCredito();
@@ -114,6 +115,110 @@ async function carregarDadosDashboard() {
         // Atualizar UI com tickets
         atualizarTicketsUI();
         atualizarContadores();
+      })(),
+      
+      // Carregar produtos ativos e produtos recentes
+      (async () => {
+        try {
+          const response = await produtosService.listar();
+          const produtos = Array.isArray(response) ? response : response.results || [];
+          const produtosAtivosCount = produtos.filter((p) => p.ativo === true).length;
+          
+          // Atualizar contador de produtos ativos
+          const contadorProdutos = document.getElementById("contador-produtos-ativos");
+          if (contadorProdutos) contadorProdutos.textContent = produtosAtivosCount;
+          
+          // Atualizar card de produtos recentes (últimos 3 produtos)
+          const produtosRecentesContainer = document.getElementById("produtos-recentes-container");
+          if (produtosRecentesContainer) {
+            if (produtos.length === 0) {
+              produtosRecentesContainer.innerHTML = `
+                <div class="text-center py-2">
+                  <i class="bi bi-box text-muted"></i>
+                  <p class="text-muted small mt-1 mb-0">Nenhum produto</p>
+                </div>
+              `;
+            } else {
+              // Ordenar por data de criação (mais recentes primeiro) e pegar os 3 primeiros
+              const produtosRecentes = [...produtos]
+                .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+                .slice(0, 3);
+              
+              produtosRecentesContainer.innerHTML = `
+                ${produtosRecentes.map(produto => `
+                  <div class="d-flex align-items-center mb-2">
+                    <div class="flex-shrink-0">
+                      <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-gift text-white small"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1 ms-2">
+                      <p class="mb-0 small">${produto.nome}</p>
+                      <small class="text-muted" style="font-size: 0.7rem;">${produto.pontos || 0} pts</small>
+                    </div>
+                    <span class="badge ${produto.ativo ? "bg-success" : "bg-secondary"}" style="font-size: 0.65rem;">
+                      ${produto.ativo ? "Ativo" : "Inativo"}
+                    </span>
+                  </div>
+                `).join('')}
+                <div class="text-center mt-2 pt-2 border-top">
+                  <button class="btn btn-outline-primary btn-sm py-0" onclick="showPage('catalogo')">
+                    <small><i class="bi bi-arrow-right me-1"></i>Ver Todos</small>
+                  </button>
+                </div>
+              `;
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao carregar produtos:", error);
+          const contadorProdutos = document.getElementById("contador-produtos-ativos");
+          if (contadorProdutos) contadorProdutos.textContent = "-";
+          
+          const produtosRecentesContainer = document.getElementById("produtos-recentes-container");
+          if (produtosRecentesContainer) {
+            produtosRecentesContainer.innerHTML = `
+              <div class="text-center py-2">
+                <i class="bi bi-exclamation-triangle text-warning"></i>
+                <p class="text-muted small mt-1 mb-0">Erro ao carregar</p>
+              </div>
+            `;
+          }
+        }
+      })(),
+      
+      // Carregar funcionários
+      (async () => {
+        try {
+          const response = await administradoresService.listar();
+          const funcionarios = Array.isArray(response) ? response : response.results || [];
+          // Filtrar apenas funcionários ativos
+          const funcionariosAtivos = funcionarios.filter((f) => f.usuario?.is_active === true).length;
+          
+          const contadorFuncionarios = document.getElementById("contador-funcionarios");
+          if (contadorFuncionarios) contadorFuncionarios.textContent = funcionariosAtivos;
+        } catch (error) {
+          console.error("Erro ao carregar funcionários:", error);
+          const contadorFuncionarios = document.getElementById("contador-funcionarios");
+          if (contadorFuncionarios) contadorFuncionarios.textContent = "-";
+        }
+      })(),
+      
+      // Carregar anúncios ativos
+      (async () => {
+        try {
+          const response = await anunciosService.listar();
+          const anuncios = Array.isArray(response) ? response : response.results || [];
+          const hoje = new Date();
+          // Anúncios ativos são aqueles cuja data de expiração ainda não passou
+          const anunciosAtivos = anuncios.filter((a) => new Date(a.data_expiracao) >= hoje).length;
+          
+          const contadorAnuncios = document.getElementById("contador-anuncios-ativos");
+          if (contadorAnuncios) contadorAnuncios.textContent = anunciosAtivos;
+        } catch (error) {
+          console.error("Erro ao carregar anúncios:", error);
+          const contadorAnuncios = document.getElementById("contador-anuncios-ativos");
+          if (contadorAnuncios) contadorAnuncios.textContent = "-";
+        }
       })(),
     ]);
   } catch (error) {
@@ -327,9 +432,9 @@ export function getDashboardContent() {
                   <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                     Produtos Ativos
                   </div>
-                  <div class="h5 mb-0 font-weight-bold text-gray-800">${
-                    mockData.produtos.filter((p) => p.ativo).length
-                  }</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="contador-produtos-ativos">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                  </div>
                   <div class="text-xs text-success">
                     <i class="bi bi-arrow-up me-1"></i>Disponíveis para resgate
                   </div>
@@ -350,9 +455,9 @@ export function getDashboardContent() {
                   <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                     Funcionários
                   </div>
-                  <div class="h5 mb-0 font-weight-bold text-gray-800">${
-                    mockData.funcionarios.length
-                  }</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="contador-funcionarios">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                  </div>
                   <div class="text-xs text-info">
                     <i class="bi bi-people me-1"></i>Equipe ativa
                   </div>
@@ -373,9 +478,9 @@ export function getDashboardContent() {
                   <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                     Anúncios Ativos
                   </div>
-                  <div class="h5 mb-0 font-weight-bold text-gray-800">${
-                    mockData.anuncios.filter((a) => a.ativo).length
-                  }</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="contador-anuncios-ativos">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                  </div>
                   <div class="text-xs text-warning">
                     <i class="bi bi-megaphone me-1"></i>Promoções ativas
                   </div>
@@ -559,49 +664,12 @@ export function getDashboardContent() {
                 <i class="bi bi-arrow-right small"></i>
               </button>
             </div>
-            <div class="card-body py-2">
-              ${mockData.produtos
-                .slice(0, 3)
-                .map(
-                  (produto) => `
-                <div class="d-flex align-items-center mb-2">
-                  <div class="flex-shrink-0">
-                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                      <i class="bi bi-gift text-white small"></i>
-                    </div>
-                  </div>
-                  <div class="flex-grow-1 ms-2">
-                    <p class="mb-0 small">${produto.nome}</p>
-                    <small class="text-muted" style="font-size: 0.7rem;">${
-                      produto.pontos
-                    } pts</small>
-                  </div>
-                  <span class="badge ${
-                    produto.ativo ? "bg-success" : "bg-secondary"
-                  }" style="font-size: 0.65rem;">${
-                    produto.ativo ? "Ativo" : "Inativo"
-                  }</span>
+            <div class="card-body py-2" id="produtos-recentes-container">
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Carregando...</span>
                 </div>
-              `
-                )
-                .join("")}
-              
-              ${
-                mockData.produtos.length === 0
-                  ? `
-                <div class="text-center py-2">
-                  <i class="bi bi-box text-muted"></i>
-                  <p class="text-muted small mt-1 mb-0">Nenhum produto</p>
-                </div>
-              `
-                  : `
-                <div class="text-center mt-2 pt-2 border-top">
-                  <button class="btn btn-outline-primary btn-sm py-0" onclick="showPage('catalogo')">
-                    <small><i class="bi bi-arrow-right me-1"></i>Ver Todos</small>
-                  </button>
-                </div>
-              `
-              }
+              </div>
             </div>
           </div>
         </div>
