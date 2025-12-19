@@ -19,7 +19,7 @@ import {
 // Importar outras funções das páginas
 import { salvarPerfil, adicionarFoto, removerFoto } from './pages/perfil.js';
 import { editarProduto, excluirProduto, pesquisarProdutos, aplicarFiltros, aplicarFiltrosAuto, limparFiltros } from './pages/catalogo.js';
-import { pesquisarAnuncios, aplicarFiltrosAnuncios, aplicarFiltrosAnunciosAuto, limparFiltrosAnuncios } from './pages/anuncios.js';
+import { pesquisarAnuncios, aplicarFiltrosAnuncios, aplicarFiltrosAnunciosAuto, limparFiltrosAnuncios, editarAnuncio, excluirAnuncio, abrirModalAnuncio } from './pages/anuncios.js';
 import { pesquisarFuncionarios, aplicarFiltrosFuncionarios, aplicarFiltrosFuncionariosAuto, limparFiltrosFuncionarios, carregarFuncionarios, salvarFuncionarioDashboard, editarFuncionario, excluirFuncionario, prepararNovoFuncionario, confirmarExclusaoFuncionario } from './pages/funcionarios.js';
 import { atualizarMetricas, aplicarFiltrosMetricas, exportarMetricas, gerarRelatorio, aplicarFiltrosMetricasAuto, limparFiltrosMetricas } from './pages/metricas.js';
 import { aplicarFiltrosTransacoesAuto, limparFiltrosTransacoes, aprovarTransacao, rejeitarTransacao, visualizarTransacao } from './pages/transacoes.js';
@@ -121,15 +121,7 @@ function salvarAnuncio() {
   showNotification('Anúncio publicado com sucesso! A promoção está ativa no sistema.', 'success');
 }
 
-function editarAnuncio(id) {
-  console.log('Editando anúncio:', id);
-  showNotification('Função de edição será implementada em breve', 'info');
-}
 
-function excluirAnuncio(id) {
-  console.log('Excluindo anúncio:', id);
-  showNotification('Anúncio removido com sucesso! A promoção foi excluída do sistema.', 'success');
-}
 
 
 
@@ -178,6 +170,7 @@ window.confirmarExclusaoFuncionario = confirmarExclusaoFuncionario;
 // Funções de anúncios
 window.editarAnuncio = editarAnuncio;
 window.excluirAnuncio = excluirAnuncio;
+window.abrirModalAnuncio = abrirModalAnuncio;
 window.pesquisarAnuncios = pesquisarAnuncios;
 window.aplicarFiltrosAnuncios = aplicarFiltrosAnuncios;
 window.aplicarFiltrosAnunciosAuto = aplicarFiltrosAnunciosAuto;
