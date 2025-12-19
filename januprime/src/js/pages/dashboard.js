@@ -539,7 +539,7 @@ export function getDashboardContent() {
             <div class="card-header d-flex justify-content-between align-items-center bg-warning bg-opacity-10 py-2">
               <h6 class="m-0 font-weight-bold text-warning small">
                 <i class="bi bi-cart-check me-1"></i>Resgates (Débito)
-                <span class="badge bg-warning text-dark ms-1" id="contador-debito">0</span>
+                <span class="badge bg-warning text-white ms-1" id="contador-debito">0</span>
               </h6>
               <div class="input-group input-group-sm" style="width: 120px;">
                 <input type="text" class="form-control form-control-sm" placeholder="Buscar..." id="searchTicketsDebito" oninput="filtrarTicketsDebito()">
@@ -628,7 +628,7 @@ export function getDashboardContent() {
             <div class="card-body py-2">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="text-muted small">Hoje</span>
-                <span class="badge bg-primary">${
+                <span class="fw-bold text-white">${
                   mockData.transacoes.filter(
                     (t) =>
                       new Date(t.data).toDateString() ===
@@ -638,7 +638,7 @@ export function getDashboardContent() {
               </div>
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="text-muted small">Esta semana</span>
-                <span class="badge bg-success">${
+                <span class="fw-bold text-white">${
                   mockData.transacoes.filter((t) => {
                     const ticketDate = new Date(t.data);
                     const weekAgo = new Date();
@@ -649,7 +649,7 @@ export function getDashboardContent() {
               </div>
               <div class="d-flex justify-content-between align-items-center">
                 <span class="text-muted small">Total de clientes</span>
-                <span class="badge bg-info">1,247</span>
+                <span class="fw-bold text-white">1,247</span>
               </div>
             </div>
           </div>
@@ -959,8 +959,8 @@ export function visualizarTicket(id, tipo) {
       ? `
       <div class="col-lg-5 mb-3 mb-lg-0">
         <div class="card h-100 bg-dark">
-          <div class="card-header bg-primary text-white py-2">
-            <h6 class="mb-0"><i class="bi bi-image me-2"></i>Imagem da Nota Fiscal</h6>
+            <div class="card-header bg-secondary py-2">
+              <h6 class="mb-0 text-white"><i class="bi bi-image me-2"></i>Imagem da Nota Fiscal</h6>
           </div>
           <div class="card-body p-2 d-flex align-items-center justify-content-center" style="min-height: 300px;">
             <a href="${ticket.imagem}" target="_blank" title="Clique para ampliar">
@@ -993,8 +993,8 @@ export function visualizarTicket(id, tipo) {
         <div class="col-lg-7">
           <!-- Dados do Cliente -->
           <div class="card mb-3">
-            <div class="card-header bg-info bg-opacity-25 py-2">
-              <h6 class="mb-0 text-info"><i class="bi bi-person-badge me-2"></i>Dados do Cliente</h6>
+            <div class="card-header py-2" style="background-color: rgba(100, 116, 139, 0.2);">
+              <h6 class="mb-0" style="color: #64748b;"><i class="bi bi-person-badge me-2"></i>Dados do Cliente</h6>
             </div>
             <div class="card-body py-2">
               <div class="row">
@@ -1013,9 +1013,9 @@ export function visualizarTicket(id, tipo) {
           </div>
           
           <!-- Dados da Nota para Verificação -->
-          <div class="card mb-3 border-warning">
-            <div class="card-header bg-warning bg-opacity-25 py-2">
-              <h6 class="mb-0 text-warning"><i class="bi bi-clipboard-check me-2"></i>Dados para Verificação</h6>
+          <div class="card mb-3" style="border-color: #94a3b8;">
+            <div class="card-header py-2" style="background-color: rgba(148, 163, 184, 0.2);">
+              <h6 class="mb-0" style="color: #64748b;"><i class="bi bi-clipboard-check me-2"></i>Dados para Verificação</h6>
             </div>
             <div class="card-body py-2">
               <div class="row g-2">
@@ -1054,12 +1054,12 @@ export function visualizarTicket(id, tipo) {
           </div>
           
           <!-- Resultado -->
-          <div class="card border-success">
-            <div class="card-header bg-success bg-opacity-25 py-2">
-              <h6 class="mb-0 text-success"><i class="bi bi-coin me-2"></i>Pontos a Creditar</h6>
+          <div class="card" style="border-color: #10b981;">
+            <div class="card-header py-2" style="background-color: rgba(16, 185, 129, 0.15);">
+              <h6 class="mb-0" style="color: #059669;"><i class="bi bi-coin me-2"></i>Pontos a Creditar</h6>
             </div>
             <div class="card-body py-3 text-center">
-              <span class="display-5 fw-bold text-success">${
+              <span class="display-5 fw-bold" style="color: #059669;">${
                 ticket.pontos || 0
               }</span>
               <span class="text-muted ms-2">pontos</span>
@@ -1085,16 +1085,21 @@ export function visualizarTicket(id, tipo) {
         <!-- Card do Produto -->
         <div class="col-lg-5 mb-3 mb-lg-0">
           <div class="card h-100 bg-dark">
-            <div class="card-header bg-warning text-dark py-2">
-              <h6 class="mb-0"><i class="bi bi-gift me-2"></i>Produto Solicitado</h6>
+            <div class="card-header bg-secondary py-2">
+              <h6 class="mb-0 text-white"><i class="bi bi-gift me-2"></i>Produto Solicitado</h6>
             </div>
-            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 250px;">
-              <i class="bi bi-box-seam text-warning" style="font-size: 5rem;"></i>
-              <h4 class="mt-3 mb-2 text-warning">${
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center p-3" style="min-height: 280px;">
+              ${ticket.imagem_produto 
+                ? `<img src="${ticket.imagem_produto}" alt="${ticket.nome_produto || 'Produto'}" class="img-fluid rounded mb-3" style="max-height: 150px; object-fit: contain;">`
+                : `<div class="d-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                  </div>`
+              }
+              <h4 class="mb-2 text-white">${
                 ticket.nome_produto || "Produto"
               }</h4>
-              <div class="bg-danger bg-opacity-25 rounded-pill px-4 py-2 mt-2">
-                <span class="text-danger fw-bold fs-5">
+              <div class="rounded-pill px-4 py-2 mt-2" style="background-color: rgba(148, 163, 184, 0.3);">
+                <span class="text-white fw-bold fs-5">
                   <i class="bi bi-dash-circle me-1"></i>${ticket.pontos} pontos
                 </span>
               </div>
@@ -1105,8 +1110,8 @@ export function visualizarTicket(id, tipo) {
         <div class="col-lg-7">
           <!-- Dados do Cliente -->
           <div class="card mb-3">
-            <div class="card-header bg-info bg-opacity-25 py-2">
-              <h6 class="mb-0 text-info"><i class="bi bi-person-badge me-2"></i>Dados do Cliente</h6>
+            <div class="card-header py-2" style="background-color: rgba(100, 116, 139, 0.2);">
+              <h6 class="mb-0" style="color: #64748b;"><i class="bi bi-person-badge me-2"></i>Dados do Cliente</h6>
             </div>
             <div class="card-body py-2">
               <div class="row">
@@ -1125,9 +1130,9 @@ export function visualizarTicket(id, tipo) {
           </div>
           
           <!-- Detalhes do Resgate -->
-          <div class="card border-warning">
-            <div class="card-header bg-warning bg-opacity-25 py-2">
-              <h6 class="mb-0 text-warning"><i class="bi bi-info-circle me-2"></i>Detalhes do Resgate</h6>
+          <div class="card" style="border-color: #94a3b8;">
+            <div class="card-header py-2" style="background-color: rgba(148, 163, 184, 0.2);">
+              <h6 class="mb-0" style="color: #64748b;"><i class="bi bi-info-circle me-2"></i>Detalhes do Resgate</h6>
             </div>
             <div class="card-body py-2">
               <div class="row g-2">
@@ -1144,7 +1149,7 @@ export function visualizarTicket(id, tipo) {
                     <small class="text-muted d-block">Status</small>
                     <span class="badge bg-${
                       ticket.status === "ABERTO"
-                        ? "warning"
+                        ? "info"
                         : ticket.status === "APROVADO"
                         ? "success"
                         : "secondary"

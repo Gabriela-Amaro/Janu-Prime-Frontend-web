@@ -3,55 +3,119 @@
 /* Importar fontes Google */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-/* Variáveis CSS - Paleta moderna */
+/* Variáveis CSS - Paleta Centralizada */
 :root {
-  /* Cores principais */
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
+  /* ========================================
+     CORES PRINCIPAIS (Brand) - Azul Profissional
+     ======================================== */
+  --primary-color: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #60a5fa;
+  --primary-accent: #3b82f6;
+  --primary-accent-dark: #2563eb;
+  --primary-accent-darker: #1d4ed8;
   --secondary-color: #64748b;
-  --accent-color: #f59e0b;
+  --secondary-dark: #475569;
 
-  /* Cores de status */
+  /* ========================================
+     CORES DE STATUS
+     ======================================== */
   --success-color: #10b981;
+  --success-dark: #059669;
   --success-light: #34d399;
   --danger-color: #ef4444;
+  --danger-dark: #dc2626;
   --danger-light: #f87171;
-  --warning-color: #f59e0b;
-  --warning-light: #fbbf24;
-  --info-color: #06b6d4;
-  --info-light: #22d3ee;
+  --warning-color: #d89a31;
+  --warning-dark: #b8822a;
+  --warning-light: #e5b050;
+  --info-color: #3b82f6;
+  --info-dark: #2563eb;
+  --info-light: #60a5fa;
+  --cyan-color: #06b6d4;
+  --cyan-dark: #0891b2;
+  --cyan-light: #22d3ee;
 
-  /* Cores neutras */
-  --light-color: #f8fafc;
-  --light-gray: #e2e8f0;
-  --medium-gray: #94a3b8;
-  --dark-color: #0f172a;
-  --dark-gray: #1e293b;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
+  /* ========================================
+     CORES DE FUNDO (Dark Theme)
+     ======================================== */
+  --bg-body-start: #1e293b;
+  --bg-body-end: #334155;
+  --bg-card: #2a2a2a;
+  --bg-card-header: #333333;
+  --bg-input: #333333;
+  --bg-input-group: #444444;
+  --bg-modal: #2a2a2a;
+  --bg-dropdown: rgba(30, 41, 59, 0.95);
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* ========================================
+     CORES DE BORDA
+     ======================================== */
+  --border-color: #444444;
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-focus: #8b5cf6;
+
+  /* ========================================
+     CORES DE TEXTO
+     ======================================== */
+  --text-white: #ffffff;
+  --text-light: #f8fafc;
   --text-muted: #94a3b8;
+  --text-secondary: #64748b;
+  --text-dark: #1e293b;
+  --text-placeholder: #94a3b8;
 
-  /* Gradientes */
-  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  /* ========================================
+     GRADIENTES
+     ======================================== */
+  --gradient-body: linear-gradient(135deg, var(--bg-body-start) 0%, var(--bg-body-end) 100%);
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-primary-btn: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-primary-btn-hover: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   --gradient-secondary: linear-gradient(135deg, #64748b 0%, #475569 100%);
   --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
   --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --gradient-warning: linear-gradient(135deg, #d89a31 0%, #b8822a 100%);
+  --gradient-info: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-cyan: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  --gradient-card-header: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+  --gradient-shimmer: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
 
-  /* Sombras */
+  /* ========================================
+     CORES RGBA (para transparências)
+     ======================================== */
+  --rgba-primary: rgba(59, 130, 246, 0.2);
+  --rgba-primary-light: rgba(59, 130, 246, 0.1);
+  --rgba-primary-lighter: rgba(59, 130, 246, 0.05);
+  --rgba-success: rgba(16, 185, 129, 0.1);
+  --rgba-success-light: rgba(16, 185, 129, 0.05);
+  --rgba-info: rgba(59, 130, 246, 0.1);
+  --rgba-info-light: rgba(59, 130, 246, 0.05);
+  --rgba-warning: rgba(216, 154, 49, 0.1);
+  --rgba-warning-light: rgba(216, 154, 49, 0.05);
+  --rgba-danger: rgba(239, 68, 68, 0.1);
+  --rgba-danger-light: rgba(239, 68, 68, 0.05);
+  --rgba-white-10: rgba(255, 255, 255, 0.1);
+  --rgba-white-15: rgba(255, 255, 255, 0.15);
+  --rgba-white-20: rgba(255, 255, 255, 0.2);
+  --rgba-white-25: rgba(255, 255, 255, 0.25);
+  --rgba-focus-ring: rgba(59, 130, 246, 0.15);
+
+  /* ========================================
+     SOMBRAS
+     ======================================== */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-  /* Bordas */
+  /* ========================================
+     BORDAS E TRANSIÇÕES
+     ======================================== */
   --border-radius: 0.75rem;
   --border-radius-sm: 0.5rem;
   --border-radius-lg: 1rem;
-
-  /* Transições */
   --transition-fast: 0.15s ease-in-out;
   --transition-normal: 0.3s ease-in-out;
   --transition-slow: 0.5s ease-in-out;
@@ -62,8 +126,8 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary);
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: var(--text-light);
+  background: var(--gradient-body);
   min-height: 100vh;
 }
 
@@ -81,10 +145,8 @@ h6 {
 
 /* Gradientes personalizados */
 .text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-white) !important;
+  -webkit-text-fill-color: var(--text-white);
 }
 
 .text-gradient-success {
@@ -227,7 +289,7 @@ h6 {
 
 /* Cards com bordas coloridas modernas */
 .border-left-primary {
-  border-left: 4px solid #8b5cf6 !important;
+  border-left: 4px solid var(--primary-accent) !important;
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
 }
 
@@ -237,8 +299,8 @@ h6 {
 }
 
 .border-left-info {
-  border-left: 4px solid #3b82f6 !important;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border-left: 4px solid #06b6d4 !important;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
 }
 
 .border-left-warning {
@@ -255,8 +317,8 @@ h6 {
 .clickable-card {
   transition: all var(--transition-normal);
   cursor: pointer;
-  border: 1px solid #444;
-  background: #2a2a2a;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
   color: white;
 }
 
@@ -308,7 +370,7 @@ h6 {
   font-family: 'Poppins', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: white !important;
+  color: var(--text-white);
   text-decoration: none;
   transition: all var(--transition-normal);
 }
@@ -390,13 +452,13 @@ h6 {
 }
 
 .nav-link:hover {
-  color: white !important;
+  color: var(--text-white);
   background: rgba(255, 255, 255, 0.1);
   transform: translateX(4px);
 }
 
 .nav-link.active {
-  color: white !important;
+  color: var(--text-white);
   background: rgba(255, 255, 255, 0.15);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
@@ -414,7 +476,7 @@ h6 {
 }
 
 .logout-link:hover {
-  color: white !important;
+  color: var(--text-white);
   background: rgba(239, 68, 68, 0.1);
   transform: translateX(4px);
 }
@@ -457,7 +519,7 @@ h6 {
 .dropdown-item.active {
   color: white;
   background: rgba(139, 92, 246, 0.2);
-  border-left: 3px solid #8b5cf6;
+  border-left: 3px solid var(--primary-accent);
 }
 
 .dropdown-item:not(.active) {
@@ -523,7 +585,7 @@ h6 {
   transition: all var(--transition-normal);
   pointer-events: none;
   z-index: 10;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .dropdown .form-select {
@@ -536,12 +598,12 @@ h6 {
 }
 
 .dropdown:hover .dropdown-icon {
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 /* Estilos específicos para dropdowns em modais */
 .modal .dropdown .dropdown-icon {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .modal .dropdown .form-select:focus+.dropdown-icon {
@@ -549,7 +611,7 @@ h6 {
 }
 
 .modal .dropdown:hover .dropdown-icon {
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 /* Estilos para dropdowns pequenos */
@@ -601,99 +663,99 @@ h6 {
 
 /* Formulários modernos */
 .form-control {
-  border: 2px solid #444;
+  border: 2px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   transition: all var(--transition-normal);
-  background: #333 !important;
-  color: white !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
 }
 
 .form-control:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15);
-  background: #333 !important;
-  color: white !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
 }
 
 .form-control::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
   font-weight: 400;
 }
 
 .form-label {
   font-weight: 600;
-  color: #ffffff !important;
+  color: var(--text-white) !important;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
 
 .form-select {
-  border: 2px solid #444;
+  border: 2px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   transition: all var(--transition-normal);
-  background: #333 !important;
-  color: white !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
 }
 
 .form-select:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15);
-  background: #333 !important;
-  color: white !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
 }
 
 /* Estilos específicos para inputs em modais */
 .modal .form-control {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .modal .form-control:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 .modal .form-control::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 .modal .form-label {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .modal .form-select {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .modal .form-select:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 /* Estilos para textarea */
 textarea.form-control {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 textarea.form-control:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 textarea.form-control::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Botões modernos */
@@ -724,13 +786,13 @@ textarea.form-control::placeholder {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: var(--primary-color);
   color: white;
   box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   color: white;
@@ -789,13 +851,13 @@ textarea.form-control::placeholder {
 }
 
 .btn-outline-primary {
-  border: 2px solid #8b5cf6;
-  color: #8b5cf6;
+  border: 2px solid var(--primary-accent);
+  color: var(--primary-accent);
   background: transparent;
 }
 
 .btn-outline-primary:hover {
-  background: #8b5cf6;
+  background: var(--primary-accent);
   color: white;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -828,13 +890,13 @@ textarea.form-control::placeholder {
 }
 
 .btn-outline-warning {
-  border: 2px solid #f59e0b;
-  color: #f59e0b;
+  border: 2px solid var(--warning-color);
+  color: var(--warning-color);
   background: transparent;
 }
 
 .btn-outline-warning:hover {
-  background: #f59e0b;
+  background: var(--warning-color);
   color: white;
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -868,33 +930,33 @@ textarea.form-control::placeholder {
 
 /* Estilos para tabelas */
 .table-dark {
-  --bs-table-bg: #2a2a2a;
-  --bs-table-color: #ffffff;
-  --bs-table-striped-bg: #333333;
+  --bs-table-bg: var(--bg-card);
+  --bs-table-color: var(--text-white);
+  --bs-table-striped-bg: var(--bg-input);
   --bs-table-hover-bg: #3a3a3a;
-  --bs-table-border-color: #444444;
+  --bs-table-border-color: var(--border-color);
 }
 
 .table-dark th {
-  background-color: #333333;
-  color: #ffffff;
-  border-color: #444444;
+  background-color: var(--bg-input);
+  color: var(--text-white);
+  border-color: var(--border-color);
   font-weight: 600;
 }
 
 .table-dark td {
-  background-color: #2a2a2a;
-  color: #ffffff;
-  border-color: #444444;
+  background-color: var(--bg-card);
+  color: var(--text-white);
+  border-color: var(--border-color);
 }
 
 .table-dark tbody tr:hover td {
   background-color: #3a3a3a;
-  color: #ffffff;
+  color: var(--text-white);
 }
 
 .table-dark tbody tr:nth-of-type(odd) td {
-  background-color: #333333;
+  background-color: var(--bg-input);
 }
 
 /* Responsividade */
@@ -943,7 +1005,7 @@ footer {
 }
 
 .text-gray-800 {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .text-gray-300 {
@@ -952,11 +1014,11 @@ footer {
 
 /* Classes de texto para tema escuro */
 .text-muted {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 .text-primary {
-  color: #8b5cf6 !important;
+  color: var(--primary-accent) !important;
 }
 
 .text-success {
@@ -992,10 +1054,10 @@ h6 {
 
 /* Cards modernos */
 .card {
-  border: 1px solid #333;
+  border: 1px solid var(--bg-input);
   box-shadow: var(--shadow-sm);
   border-radius: var(--border-radius);
-  background: #2a2a2a;
+  background: var(--bg-card);
   transition: all var(--transition-normal);
   overflow: hidden;
   color: white;
@@ -1007,8 +1069,8 @@ h6 {
 }
 
 .card-header {
-  background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
-  border-bottom: 1px solid #444;
+  background: linear-gradient(135deg, var(--bg-input) 0%, var(--bg-card) 100%);
+  border-bottom: 1px solid var(--border-color);
   padding: 1.25rem 1.5rem;
   font-weight: 600;
   color: white;
@@ -1019,8 +1081,8 @@ h6 {
 }
 
 .card-footer {
-  background: #333;
-  border-top: 1px solid #444;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border-color);
   padding: 1rem 1.5rem;
   color: white;
 }
@@ -1030,7 +1092,7 @@ h6 {
   border: none;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
-  background: #2a2a2a;
+  background: var(--bg-card);
   overflow: hidden;
   color: white;
 }
@@ -1058,16 +1120,16 @@ h6 {
 }
 
 .modal-body strong {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .modal-body h6 {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .modal-footer {
-  background: #333;
-  border-top: 1px solid #444;
+  background: var(--bg-input);
+  border-top: 1px solid var(--border-color);
   padding: 1.5rem 2rem;
   color: white;
 }
@@ -1194,7 +1256,7 @@ footer .text-muted {
 
 .badge.bg-warning {
   background: var(--gradient-warning) !important;
-  color: white !important;
+  color: var(--text-white);
 }
 
 .badge.bg-danger {
@@ -1203,7 +1265,7 @@ footer .text-muted {
 
 .badge.bg-info {
   background: var(--gradient-info) !important;
-  color: white !important;
+  color: var(--text-white);
 }
 
 .badge.bg-secondary {
@@ -1324,12 +1386,12 @@ hr {
 .product-card .card-img-top-container .bi-image {
   font-size: 3rem !important;
   opacity: 0.5;
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Estilos para os pontos - destacar em branco */
 .product-card .text-white {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
@@ -1360,59 +1422,59 @@ hr {
 }
 
 .input-group .form-control {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .input-group .form-control:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 .input-group .form-control::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Estilos para input-group-text */
 .input-group-text {
-  background: #444 !important;
-  border-color: #444 !important;
-  color: #ffffff !important;
+  background: var(--border-color) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-white) !important;
 }
 
 /* Estilos para elementos de filtro */
 .card .form-control {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .card .form-control:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 .card .form-control::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 .card .form-label {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .card .form-select {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .card .form-select:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 /* Estilos para selects de filtro */
@@ -1447,7 +1509,7 @@ hr {
   margin-left: -8px;
   margin-top: -8px;
   border: 2px solid transparent;
-  border-top-color: #ffffff;
+  border-top-color: var(--text-white);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1523,7 +1585,7 @@ hr {
 
 /* Estilos específicos para melhor contraste */
 .card-title {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .card-text {
@@ -1536,7 +1598,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 p {
@@ -1544,20 +1606,20 @@ p {
 }
 
 small {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 strong {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 /* Estilos para elementos específicos do dashboard */
 .font-weight-bold {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
 }
 
 .text-xs {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Estilos globais para garantir contraste em todos os formulários */
@@ -1569,9 +1631,9 @@ input[type="date"],
 input[type="file"],
 textarea,
 select {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 input[type="text"]:focus,
@@ -1582,9 +1644,9 @@ input[type="date"]:focus,
 input[type="file"]:focus,
 textarea:focus,
 select:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
   box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.15) !important;
 }
 
@@ -1593,44 +1655,44 @@ input[type="email"]::placeholder,
 input[type="password"]::placeholder,
 input[type="number"]::placeholder,
 textarea::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text-muted) !important;
 }
 
 /* Estilos para labels em todos os contextos */
 label {
-  color: #ffffff !important;
+  color: var(--text-white) !important;
   font-weight: 600;
 }
 
 /* Estilos para elementos específicos de filtro */
 .input-group-sm .form-control {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .input-group-sm .form-control:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 .form-select-sm {
-  background: #333 !important;
-  color: white !important;
-  border-color: #444 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--border-color) !important;
 }
 
 .form-select-sm:focus {
-  background: #333 !important;
-  color: white !important;
-  border-color: #8b5cf6 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-white);
+  border-color: var(--primary-accent) !important;
 }
 
 /* Estilos para o tema escuro */
 [data-bs-theme="dark"] {
   --bs-body-bg: #212529;
-  --bs-body-color: #ffffff;
+  --bs-body-color: var(--text-white);
 }
 
 [data-bs-theme="dark"] .card {
