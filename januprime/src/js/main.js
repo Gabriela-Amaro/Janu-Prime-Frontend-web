@@ -20,7 +20,7 @@ import {
 import { salvarPerfil, adicionarFoto, removerFoto } from './pages/perfil.js';
 import { editarProduto, excluirProduto, pesquisarProdutos, aplicarFiltros, aplicarFiltrosAuto, limparFiltros } from './pages/catalogo.js';
 import { pesquisarAnuncios, aplicarFiltrosAnuncios, aplicarFiltrosAnunciosAuto, limparFiltrosAnuncios } from './pages/anuncios.js';
-import { pesquisarFuncionarios, aplicarFiltrosFuncionarios, aplicarFiltrosFuncionariosAuto, limparFiltrosFuncionarios } from './pages/funcionarios.js';
+import { pesquisarFuncionarios, aplicarFiltrosFuncionarios, aplicarFiltrosFuncionariosAuto, limparFiltrosFuncionarios, carregarFuncionarios, salvarFuncionarioDashboard, editarFuncionario, excluirFuncionario, prepararNovoFuncionario, confirmarExclusaoFuncionario } from './pages/funcionarios.js';
 import { atualizarMetricas, aplicarFiltrosMetricas, exportarMetricas, gerarRelatorio, aplicarFiltrosMetricasAuto, limparFiltrosMetricas } from './pages/metricas.js';
 import { aplicarFiltrosTransacoesAuto, limparFiltrosTransacoes, aprovarTransacao, rejeitarTransacao, visualizarTransacao } from './pages/transacoes.js';
 import { aplicarFiltrosAuditoriaAuto, limparFiltrosAuditoria } from './pages/auditoria.js';
@@ -116,29 +116,9 @@ function salvarProduto() {
   showNotification('Produto cadastrado com sucesso! O item foi adicionado ao catálogo.', 'success');
 }
 
-function salvarFuncionario() {
-  console.log('Salvando funcionário...');
-  showNotification('Funcionário cadastrado com sucesso! O usuário foi adicionado à equipe.', 'success');
-}
-
 function salvarAnuncio() {
   console.log('Salvando anúncio...');
   showNotification('Anúncio publicado com sucesso! A promoção está ativa no sistema.', 'success');
-}
-
-function editarFuncionario(id) {
-  console.log('Editando funcionário:', id);
-  showNotification('Função de edição será implementada em breve', 'info');
-}
-
-function excluirFuncionario(id) {
-  console.log('Excluindo funcionário:', id);
-  showNotification('Funcionário removido com sucesso! O usuário foi excluído da equipe.', 'success');
-}
-
-function toggleFuncionario(id) {
-  console.log('Alterando status do funcionário:', id);
-  showNotification('Status do funcionário atualizado! As permissões foram modificadas.', 'info');
 }
 
 function editarAnuncio(id) {
@@ -171,7 +151,6 @@ window.showNotification = showNotification;
 
 // Funções de formulários
 window.salvarProduto = salvarProduto;
-window.salvarFuncionario = salvarFuncionario;
 window.salvarAnuncio = salvarAnuncio;
 window.salvarPerfil = salvarPerfil;
 
@@ -187,11 +166,14 @@ window.limparFiltros = limparFiltros;
 // Funções de funcionários
 window.editarFuncionario = editarFuncionario;
 window.excluirFuncionario = excluirFuncionario;
-window.toggleFuncionario = toggleFuncionario;
 window.pesquisarFuncionarios = pesquisarFuncionarios;
 window.aplicarFiltrosFuncionarios = aplicarFiltrosFuncionarios;
 window.aplicarFiltrosFuncionariosAuto = aplicarFiltrosFuncionariosAuto;
 window.limparFiltrosFuncionarios = limparFiltrosFuncionarios;
+window.carregarFuncionarios = carregarFuncionarios;
+window.salvarFuncionarioDashboard = salvarFuncionarioDashboard;
+window.prepararNovoFuncionario = prepararNovoFuncionario;
+window.confirmarExclusaoFuncionario = confirmarExclusaoFuncionario;
 
 // Funções de anúncios
 window.editarAnuncio = editarAnuncio;
