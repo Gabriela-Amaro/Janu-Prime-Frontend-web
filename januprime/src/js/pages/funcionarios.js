@@ -83,7 +83,7 @@ export function getFuncionariosContent() {
           <div class="card">
             <div class="card-body">
               <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <label for="pesquisaFuncionario" class="form-label">Pesquisar Funcionário</label>
                   <div class="input-group">
                     <input type="text" class="form-control" id="pesquisaFuncionario" placeholder="Nome ou email..." oninput="filtrarFuncionariosLocal()">
@@ -92,13 +92,24 @@ export function getFuncionariosContent() {
                     </span>
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <label for="filtroCargo" class="form-label">Cargo</label>
                   <div class="dropdown">
                     <select class="form-select" id="filtroCargo" onchange="filtrarFuncionariosLocal()">
                       <option value="">Todos</option>
                       <option value="gerente">Gerente</option>
                       <option value="funcionario">Funcionário</option>
+                    </select>
+                    <i class="bi bi-chevron-down dropdown-icon"></i>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="filtroStatus" class="form-label">Status</label>
+                  <div class="dropdown">
+                    <select class="form-select" id="filtroStatus" onchange="filtrarFuncionariosLocal()">
+                      <option value="">Todos</option>
+                      <option value="ativo">Ativo</option>
+                      <option value="inativo">Inativo</option>
                     </select>
                     <i class="bi bi-chevron-down dropdown-icon"></i>
                   </div>
@@ -126,13 +137,14 @@ export function getFuncionariosContent() {
                       <th>E-mail</th>
                       <th>CPF</th>
                       <th>Cargo</th>
+                      <th>Status</th>
                       <th>Data de Cadastro</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td colspan="6" class="text-center py-4">
+                      <td colspan="7" class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
                           <span class="visually-hidden">Carregando...</span>
                         </div>
@@ -192,7 +204,7 @@ function atualizarExibicaoFuncionarios(funcionarios) {
   if (!funcionarios || funcionarios.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center py-4">
+        <td colspan="7" class="text-center py-4">
           <i class="bi bi-people text-muted" style="font-size: 2rem;"></i>
           <h6 class="mt-2 text-muted">Nenhum funcionário encontrado</h6>
           <p class="text-muted small">Clique em "Adicionar Funcionário" para cadastrar o primeiro.</p>
@@ -203,15 +215,19 @@ function atualizarExibicaoFuncionarios(funcionarios) {
   }
 
   tbody.innerHTML = funcionarios.map(funcionario => {
-    const id = getIdFuncionario(funcionario);
+    // O ID do administrador é o mesmo que o ID do usuario (PK = usuario_id)
+    const id = funcionario.usuario?.id;
     const nome = funcionario.nome || '-';
+    // Escapar aspas simples no nome para não quebrar o onclick
+    const nomeEscapado = nome.replace(/'/g, "\\'").replace(/"/g, '\\"');
     const email = funcionario.usuario?.email || '-';
     const cpf = formatarCPF(funcionario.cpf);
     const isSuperUser = funcionario.super_user === true;
+    const isAtivo = funcionario.usuario?.is_active === true;
     const dataCadastro = formatarData(funcionario.usuario?.created_at);
 
     return `
-      <tr>
+      <tr data-funcionario-id="${id}">
         <td>${nome}</td>
         <td>${email}</td>
         <td>${cpf}</td>
@@ -220,13 +236,21 @@ function atualizarExibicaoFuncionarios(funcionarios) {
             ${isSuperUser ? 'Gerente' : 'Funcionário'}
           </span>
         </td>
+        <td>
+          <span class="badge ${isAtivo ? 'bg-success' : 'bg-danger'}">
+            ${isAtivo ? 'Ativo' : 'Inativo'}
+          </span>
+        </td>
         <td>${dataCadastro}</td>
         <td>
           <div class="btn-group" role="group">
             <button class="btn btn-sm btn-outline-primary" onclick="editarFuncionario(${id})" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusaoFuncionario(${id}, '${nome}')" title="Excluir">
+            <button class="btn btn-sm ${isAtivo ? 'btn-outline-warning' : 'btn-outline-success'}" onclick="toggleStatusFuncionario(${id}, ${isAtivo})" title="${isAtivo ? 'Desativar' : 'Ativar'}">
+              <i class="bi bi-${isAtivo ? 'pause-fill' : 'play-fill'}"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusaoFuncionario(${id}, '${nomeEscapado}')" title="Excluir">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -242,6 +266,7 @@ function atualizarExibicaoFuncionarios(funcionarios) {
 export function filtrarFuncionariosLocal() {
   const termo = document.getElementById('pesquisaFuncionario')?.value.toLowerCase() || '';
   const cargo = document.getElementById('filtroCargo')?.value || '';
+  const status = document.getElementById('filtroStatus')?.value || '';
   
   let funcionariosFiltrados = [...funcionariosData];
   
@@ -260,6 +285,18 @@ export function filtrarFuncionariosLocal() {
         return funcionario.super_user === true;
       } else if (cargo === 'funcionario') {
         return funcionario.super_user === false;
+      }
+      return true;
+    });
+  }
+  
+  // Filtro por status (is_active)
+  if (status) {
+    funcionariosFiltrados = funcionariosFiltrados.filter(funcionario => {
+      if (status === 'ativo') {
+        return funcionario.usuario?.is_active === true;
+      } else if (status === 'inativo') {
+        return funcionario.usuario?.is_active === false;
       }
       return true;
     });
@@ -284,9 +321,11 @@ window.pesquisarFuncionariosAuto = pesquisarFuncionariosAuto;
 export function limparFiltrosFuncionarios() {
   const pesquisaInput = document.getElementById('pesquisaFuncionario');
   const cargoSelect = document.getElementById('filtroCargo');
+  const statusSelect = document.getElementById('filtroStatus');
   
   if (pesquisaInput) pesquisaInput.value = '';
   if (cargoSelect) cargoSelect.value = '';
+  if (statusSelect) statusSelect.value = '';
   
   atualizarExibicaoFuncionarios(funcionariosData);
 }
@@ -316,6 +355,24 @@ export function prepararNovoFuncionario() {
   const confirmarSenhaInput = document.getElementById('funcionarioConfirmarSenha');
   if (senhaInput) senhaInput.required = true;
   if (confirmarSenhaInput) confirmarSenhaInput.required = true;
+  
+  // Habilitar campos de CPF e email (editáveis apenas na criação)
+  const cpfInput = document.getElementById('funcionarioCpf');
+  const emailInput = document.getElementById('funcionarioEmail');
+  if (cpfInput) {
+    cpfInput.readOnly = false;
+    cpfInput.classList.remove('text-muted', 'bg-dark');
+    cpfInput.style.opacity = '1';
+  }
+  if (emailInput) {
+    emailInput.readOnly = false;
+    emailInput.classList.remove('text-muted', 'bg-dark');
+    emailInput.style.opacity = '1';
+  }
+  
+  // Remover avisos de campos não editáveis
+  document.getElementById('cpfNaoEditavelAviso')?.remove();
+  document.getElementById('emailNaoEditavelAviso')?.remove();
 }
 
 window.prepararNovoFuncionario = prepararNovoFuncionario;
@@ -354,6 +411,38 @@ export async function editarFuncionario(id) {
     const confirmarSenhaInput = document.getElementById('funcionarioConfirmarSenha');
     if (senhaInput) senhaInput.required = false;
     if (confirmarSenhaInput) confirmarSenhaInput.required = false;
+    
+    // Desabilitar campos de CPF e email (não editáveis)
+    if (cpfInput) {
+      cpfInput.readOnly = true;
+      cpfInput.classList.add('text-muted', 'bg-dark');
+      cpfInput.style.opacity = '0.6';
+      cpfInput.style.cursor = 'not-allowed';
+      
+      // Adicionar aviso se não existir
+      if (!document.getElementById('cpfNaoEditavelAviso')) {
+        const aviso = document.createElement('small');
+        aviso.id = 'cpfNaoEditavelAviso';
+        aviso.className = 'text-muted d-block mt-1';
+        aviso.innerHTML = '<i class="bi bi-lock me-1"></i>Este campo não pode ser alterado';
+        cpfInput.parentNode.appendChild(aviso);
+      }
+    }
+    if (emailInput) {
+      emailInput.readOnly = true;
+      emailInput.classList.add('text-muted', 'bg-dark');
+      emailInput.style.opacity = '0.6';
+      emailInput.style.cursor = 'not-allowed';
+      
+      // Adicionar aviso se não existir
+      if (!document.getElementById('emailNaoEditavelAviso')) {
+        const aviso = document.createElement('small');
+        aviso.id = 'emailNaoEditavelAviso';
+        aviso.className = 'text-muted d-block mt-1';
+        aviso.innerHTML = '<i class="bi bi-lock me-1"></i>Este campo não pode ser alterado';
+        emailInput.parentNode.appendChild(aviso);
+      }
+    }
     
     // Abrir modal
     const modal = new window.bootstrap.Modal(document.getElementById('funcionarioModal'));
@@ -484,6 +573,32 @@ export async function excluirFuncionario(id) {
 }
 
 window.excluirFuncionario = excluirFuncionario;
+
+/**
+ * Alterna o status ativo/inativo do funcionário
+ */
+export async function toggleStatusFuncionario(id, statusAtual) {
+  const novoStatus = !statusAtual;
+  const acao = novoStatus ? 'ativar' : 'desativar';
+  
+  if (!confirm(`Tem certeza que deseja ${acao} este funcionário?`)) {
+    return;
+  }
+  
+  try {
+    await administradoresService.atualizar(id, { is_active: novoStatus });
+    showNotification(
+      novoStatus ? 'Funcionário ativado com sucesso!' : 'Funcionário desativado com sucesso!',
+      'success'
+    );
+    await carregarFuncionarios();
+  } catch (error) {
+    console.error('Erro ao alterar status do funcionário:', error);
+    showNotification(error.message || 'Erro ao alterar status. Tente novamente.', 'error');
+  }
+}
+
+window.toggleStatusFuncionario = toggleStatusFuncionario;
 
 // Funções de compatibilidade
 export function pesquisarFuncionarios() {
