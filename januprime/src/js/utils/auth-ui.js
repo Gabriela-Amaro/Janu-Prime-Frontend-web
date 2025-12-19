@@ -1,4 +1,6 @@
 // Utilitários para controlar a interface baseada na autenticação
+import { authService } from '../services/auth.js';
+
 export function updateUIBasedOnAuth() {
   const navbar = document.getElementById('mainNavbar');
   
@@ -56,26 +58,35 @@ function getRoleDisplayName(role) {
 // Controlar visibilidade de elementos baseado no cargo do usuário
 export function updatePermissionsUI() {
   const userData = authService.getUserData();
-  if (!userData) return;
+  if (!userData) {
+    // Se não houver userData, esconder todos os elementos restritos
+    document.querySelectorAll('[data-role="admin"]').forEach(element => {
+      element.style.display = 'none';
+    });
+    return;
+  }
   
-  const role = userData.role;
+  // Verificar se é super_user do estabelecimento
+  // O backend retorna super_user diretamente no userData quando é ADMINISTRADOR
+  const isSuperUser = userData.super_user === true || userData.super_user === 1;
   
   // Esconder elementos que o usuário não tem permissão para ver
   const adminOnlyElements = document.querySelectorAll('[data-role="admin"]');
   const gerenteOnlyElements = document.querySelectorAll('[data-role="gerente"]');
   const funcionarioOnlyElements = document.querySelectorAll('[data-role="funcionario"]');
   
-  // Mostrar/esconder elementos baseado no cargo
+  // Dropdown de administração aparece apenas para super_user do estabelecimento
   adminOnlyElements.forEach(element => {
-    element.style.display = role === 'admin' ? 'block' : 'none';
+    element.style.display = isSuperUser ? 'block' : 'none';
   });
   
+  // Outros elementos baseados em role (se necessário)
   gerenteOnlyElements.forEach(element => {
-    element.style.display = ['admin', 'gerente'].includes(role) ? 'block' : 'none';
+    // Manter lógica existente se necessário
   });
   
   funcionarioOnlyElements.forEach(element => {
-    element.style.display = ['admin', 'gerente', 'funcionario'].includes(role) ? 'block' : 'none';
+    // Manter lógica existente se necessário
   });
 }
 

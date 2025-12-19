@@ -54,6 +54,13 @@ export function showPage(pageName) {
   content.innerHTML = getPageContent(pageName);
   content.classList.add('fade-in-up');
   
+  // Atualizar permissões após carregar a página (para atualizar visibilidade do dropdown de admin)
+  if (typeof window.updatePermissionsUI === 'function') {
+    setTimeout(() => {
+      window.updatePermissionsUI();
+    }, 100);
+  }
+  
   // Carrega dados assíncronos para páginas específicas
   if (pageName === 'dashboard' && typeof window.carregarDadosDashboard === 'function') {
     // Usar setTimeout para garantir que o DOM foi renderizado
