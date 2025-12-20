@@ -31,9 +31,9 @@ function gerarConteudoCredito(ticket) {
         <div class="card-header bg-secondary py-2">
           <h6 class="mb-0 text-white"><i class="bi bi-image me-2"></i>Imagem da Nota Fiscal</h6>
         </div>
-        <div class="card-body p-2 d-flex align-items-center justify-content-center" style="min-height: 300px;">
+        <div class="card-body p-2 d-flex align-items-center justify-content-center">
           <a href="${imagemUrl}" target="_blank" title="Clique para ampliar">
-            <img src="${imagemUrl}" alt="Nota Fiscal" class="img-fluid rounded" style="max-height: 280px; cursor: zoom-in;">
+            <img src="${imagemUrl}" alt="Nota Fiscal" class="img-fluid rounded" style="width: 100%; cursor: zoom-in;">
           </a>
         </div>
         <div class="card-footer text-center py-2">
