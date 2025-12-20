@@ -467,7 +467,8 @@ function atualizarContadores() {
 
 export function getDashboardContent() {
   const userData = getUserData();
-  const nomeUsuario = userData?.nome || "Usuário";
+  const nomeCompleto = userData?.nome || "Usuário";
+  const nomeUsuario = nomeCompleto.split(' ')[0];
   const nomeEstabelecimento =
     userData?.estabelecimento?.nome || "Seu Estabelecimento";
 

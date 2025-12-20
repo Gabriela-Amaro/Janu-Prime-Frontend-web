@@ -24,6 +24,14 @@ function updateUserInfo() {
   // Atualizar título da página
   document.title = `Janu Prime - ${userData.empresa || 'Painel do Estabelecimento'}`;
   
+  // Atualizar nome do usuário na navbar (apenas primeiro nome)
+  const navbarUserName = document.getElementById('navbar-user-name');
+  if (navbarUserName) {
+    const nomeCompleto = userData.nome || 'Usuário';
+    const primeiroNome = nomeCompleto.split(' ')[0];
+    navbarUserName.textContent = primeiroNome;
+  }
+  
   // Atualizar informações do usuário em elementos específicos (se existirem)
   const userInfoElements = document.querySelectorAll('[data-user-info]');
   userInfoElements.forEach(element => {

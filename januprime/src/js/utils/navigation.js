@@ -3,7 +3,7 @@ export function showPage(pageName) {
   const content = document.getElementById('page-content');
   
   // Verificar se é uma página que requer autenticação
-  const protectedPages = ['dashboard', 'perfil', 'catalogo', 'anuncios', 'transacoes', 'funcionarios', 'metricas', 'auditoria'];
+  const protectedPages = ['dashboard', 'perfil', 'meu-perfil', 'catalogo', 'anuncios', 'transacoes', 'funcionarios', 'metricas', 'auditoria'];
   
   if (protectedPages.includes(pageName)) {
     // Verificar autenticação
@@ -108,6 +108,8 @@ function getPageContent(pageName) {
       return getMetricasContent();
     case 'auditoria':
       return getAuditoriaContent();
+    case 'meu-perfil':
+      return getMeuPerfilContent();
     default:
       return getLoginContent(); // Página padrão agora é login
   }
@@ -125,3 +127,4 @@ import { getTransacoesContent } from '../pages/transacoes.js';
 import { getFuncionariosContent } from '../pages/funcionarios.js';
 import { getMetricasContent } from '../pages/metricas.js';
 import { getAuditoriaContent } from '../pages/auditoria.js';
+import { getMeuPerfilContent } from '../pages/meu-perfil.js';

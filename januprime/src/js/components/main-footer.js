@@ -41,7 +41,7 @@ export function getMainFooter() {
               <li><a href="#" onclick="showPage('catalogo')">Catálogo</a></li>
               <li><a href="#" onclick="showPage('transacoes')">Transações</a></li>
               <li><a href="#" onclick="showPage('funcionarios')">Funcionários</a></li>
-              <li><a href="#" onclick="showPage('metricas')">Métricas</a></li>
+              <!-- <li><a href="#" onclick="showPage('metricas')">Métricas</a></li> -->
             </ul>
           </div>
           
@@ -50,7 +50,7 @@ export function getMainFooter() {
             <h6 class="footer-title mb-3">Recursos</h6>
             <ul class="footer-links">
               <li><a href="#" onclick="showPage('anuncios')">Anúncios</a></li>
-              <li><a href="#" onclick="showPage('auditoria')">Auditoria</a></li>
+              <!-- <li><a href="#" onclick="showPage('auditoria')">Auditoria</a></li> -->
               <li><a href="#" onclick="showPage('perfil')">Perfil</a></li>
               <li><a href="#" class="text-muted">API</a></li>
               <li><a href="#" class="text-muted">Integrações</a></li>

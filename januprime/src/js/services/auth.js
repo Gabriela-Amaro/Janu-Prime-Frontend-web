@@ -143,6 +143,7 @@ export class AuthService {
     const permissions = {
       dashboard: ["ADMINISTRADOR", "CLIENTE"],
       perfil: ["ADMINISTRADOR", "CLIENTE"],
+      "meu-perfil": ["ADMINISTRADOR", "CLIENTE"],
       catalogo: ["ADMINISTRADOR"],
       anuncios: ["ADMINISTRADOR"],
       transacoes: ["ADMINISTRADOR"],
