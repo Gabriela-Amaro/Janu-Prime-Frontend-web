@@ -14,7 +14,7 @@ let produtosFiltrados = [];
  */
 function getImagemUrl(imagemPath) {
   if (!imagemPath) {
-    return '/assets/images/logo.svg'; // Imagem padrão
+    return null; // Retorna null para indicar que não há imagem
   }
   
   // Se já for uma URL completa, retornar como está
@@ -31,7 +31,17 @@ function getImagemUrl(imagemPath) {
     return `${baseUrl}${imagemPath}`;
   }
   
-  // Se não, adicionar /media/ antes do caminho
+  // Se começar com media/ (sem barra inicial)
+  if (imagemPath.startsWith('media/')) {
+    return `${baseUrl}/${imagemPath}`;
+  }
+  
+  // Se começar com produtos/ (caminho relativo dentro de media)
+  if (imagemPath.startsWith('produtos/')) {
+    return `${baseUrl}/media/${imagemPath}`;
+  }
+  
+  // Caso geral: adicionar /media/ antes do caminho
   const mediaPath = imagemPath.startsWith('/') ? imagemPath : `/${imagemPath}`;
   return `${baseUrl}/media${mediaPath}`;
 }

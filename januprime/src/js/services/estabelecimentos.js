@@ -81,6 +81,22 @@ class EstabelecimentosService {
   }
 
   /**
+   * Atualizar estabelecimento com logotipo (usando FormData)
+   * Envia apenas o logotipo para evitar problemas de serialização
+   */
+  async atualizarComLogotipo(id, logotipo) {
+    try {
+      const formData = new FormData();
+      formData.append('logotipo', logotipo);
+      
+      return await apiService.patch(`${this.endpoint}${id}/`, formData);
+    } catch (error) {
+      console.error("Erro ao atualizar logotipo:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Deletar estabelecimento
    */
   async deletar(id) {

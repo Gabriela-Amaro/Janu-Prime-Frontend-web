@@ -61,6 +61,32 @@ class ProdutosService {
   }
 
   /**
+   * Criar novo produto com imagem (usando FormData)
+   */
+  async criarComImagem(dados, imagem) {
+    try {
+      const formData = new FormData();
+      
+      // Adicionar campos do produto
+      Object.keys(dados).forEach(key => {
+        if (dados[key] !== undefined && dados[key] !== null) {
+          formData.append(key, dados[key]);
+        }
+      });
+      
+      // Adicionar imagem se existir
+      if (imagem) {
+        formData.append('imagem', imagem);
+      }
+      
+      return await apiService.post(this.endpoint, formData);
+    } catch (error) {
+      console.error("Erro ao criar produto com imagem:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Atualizar produto existente
    */
   async atualizar(id, dados) {
@@ -68,6 +94,32 @@ class ProdutosService {
       return await apiService.patch(`${this.endpoint}${id}/`, dados);
     } catch (error) {
       console.error("Erro ao atualizar produto:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Atualizar produto existente com imagem (usando FormData)
+   */
+  async atualizarComImagem(id, dados, imagem) {
+    try {
+      const formData = new FormData();
+      
+      // Adicionar campos do produto
+      Object.keys(dados).forEach(key => {
+        if (dados[key] !== undefined && dados[key] !== null) {
+          formData.append(key, dados[key]);
+        }
+      });
+      
+      // Adicionar imagem se existir
+      if (imagem) {
+        formData.append('imagem', imagem);
+      }
+      
+      return await apiService.patch(`${this.endpoint}${id}/`, formData);
+    } catch (error) {
+      console.error("Erro ao atualizar produto com imagem:", error);
       throw error;
     }
   }

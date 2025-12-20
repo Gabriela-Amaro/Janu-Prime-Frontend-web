@@ -8,6 +8,26 @@ import { estabelecimentosService } from "../services/estabelecimentos.js";
 import { anunciosService } from "../services/anuncios.js";
 import { administradoresService } from "../services/administradores.js";
 import { exibirTicketModal } from "../components/ticket-modal.js";
+import { APP_CONFIG } from "../config/app.js";
+
+/**
+ * Constrói URL completa do logotipo
+ */
+function getLogotipoUrl(logotipoPath) {
+  if (!logotipoPath) return '/assets/images/logo.svg';
+  if (logotipoPath.startsWith('http://') || logotipoPath.startsWith('https://')) {
+    return logotipoPath;
+  }
+  const baseUrl = APP_CONFIG.apiUrl.replace('/api', '');
+  if (logotipoPath.startsWith('/media/')) {
+    return `${baseUrl}${logotipoPath}`;
+  }
+  if (logotipoPath.startsWith('logotipos/')) {
+    return `${baseUrl}/media/${logotipoPath}`;
+  }
+  const mediaPath = logotipoPath.startsWith('/') ? logotipoPath : `/${logotipoPath}`;
+  return `${baseUrl}/media${mediaPath}`;
+}
 
 // Estado global da aplicação
 let currentPage = "dashboard";
@@ -75,6 +95,22 @@ function atualizarPerfilEmpresaUI() {
         statusBadge.textContent = "Inativo";
         statusBadge.className = "badge bg-secondary";
       }
+    }
+  }
+
+  // Atualizar logotipo
+  const logotipoContainer = document.getElementById("dashboard-logotipo-container");
+  if (logotipoContainer) {
+    if (dadosEstabelecimento.logotipo) {
+      logotipoContainer.innerHTML = `
+        <img src="${getLogotipoUrl(dadosEstabelecimento.logotipo)}" alt="Logo" class="rounded-circle mx-auto d-block" width="50" height="50" style="object-fit: cover;">
+      `;
+    } else {
+      logotipoContainer.innerHTML = `
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 50px; height: 50px;">
+          <i class="bi bi-building text-white" style="font-size: 1.5rem;"></i>
+        </div>
+      `;
     }
   }
 }
@@ -662,8 +698,10 @@ export function getDashboardContent() {
               </button>
             </div>
             <div class="card-body py-2 text-center">
-              <div class="mb-2">
-                <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="50" height="50">
+              <div class="mb-2" id="dashboard-logotipo-container">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 50px; height: 50px;">
+                  <i class="bi bi-building text-white" style="font-size: 1.5rem;"></i>
+                </div>
               </div>
               <h6 class="mb-1 small" id="dashboard-nome-estabelecimento">${nomeEstabelecimento}</h6>
               <p class="text-muted small mb-2" id="dashboard-endereco-estabelecimento">Carregando...</p>
@@ -1252,6 +1290,7 @@ async function salvarProdutoDashboard() {
     const nome = document.getElementById("produtoNome")?.value.trim();
     const descricao = document.getElementById("produtoDescricao")?.value.trim();
     const precoInput = document.getElementById("produtoPreco");
+    const imagemInput = document.getElementById("produtoImagem");
     const produtoId = window.produtoEditandoId; // ID se estiver editando
     
     if (!nome) {
@@ -1283,17 +1322,35 @@ async function salvarProdutoDashboard() {
       ativo: ativo,
     };
 
+    // Verificar se há imagem selecionada
+    const imagem = imagemInput?.files?.[0] || null;
+
     // Criar ou atualizar produto via API
     if (produtoId) {
-      await produtosService.atualizar(produtoId, dadosProduto);
+      // Atualização
+      if (imagem) {
+        await produtosService.atualizarComImagem(produtoId, dadosProduto, imagem);
+      } else {
+        await produtosService.atualizar(produtoId, dadosProduto);
+      }
       showNotification("Produto atualizado com sucesso!", "success");
     } else {
-      await produtosService.criar(dadosProduto);
+      // Criação
+      if (imagem) {
+        await produtosService.criarComImagem(dadosProduto, imagem);
+      } else {
+        await produtosService.criar(dadosProduto);
+      }
       showNotification("Produto criado com sucesso!", "success");
     }
 
     // Limpar ID de edição
     window.produtoEditandoId = null;
+
+    // Limpar input de imagem
+    if (imagemInput) {
+      imagemInput.value = "";
+    }
 
     // Fechar modal
     const modalElement = document.getElementById("produtoModal");

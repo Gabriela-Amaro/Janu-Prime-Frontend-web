@@ -1,6 +1,27 @@
 import { getMainFooter } from "../components/main-footer.js";
 import { showNotification } from "../utils/notifications.js";
 import { estabelecimentosService } from "../services/estabelecimentos.js";
+import { fotosEspacoService } from "../services/fotos-espaco.js";
+import { APP_CONFIG } from "../config/app.js";
+
+/**
+ * Constrói URL completa do logotipo
+ */
+function getLogotipoUrl(logotipoPath) {
+  if (!logotipoPath) return '/assets/images/logo.svg';
+  if (logotipoPath.startsWith('http://') || logotipoPath.startsWith('https://')) {
+    return logotipoPath;
+  }
+  const baseUrl = APP_CONFIG.apiUrl.replace('/api', '');
+  if (logotipoPath.startsWith('/media/')) {
+    return `${baseUrl}${logotipoPath}`;
+  }
+  if (logotipoPath.startsWith('logotipos/')) {
+    return `${baseUrl}/media/${logotipoPath}`;
+  }
+  const mediaPath = logotipoPath.startsWith('/') ? logotipoPath : `/${logotipoPath}`;
+  return `${baseUrl}/media${mediaPath}`;
+}
 
 // Função para obter dados do usuário logado
 function getUserData() {
@@ -104,6 +125,22 @@ function atualizarPreviewPerfil() {
       previewHorario.textContent = horario;
     }
   }
+
+  // Atualizar logotipo no preview
+  const previewLogoContainer = document.getElementById("previewLogoContainer");
+  if (previewLogoContainer) {
+    if (dadosEstabelecimentoPerfil.logotipo) {
+      previewLogoContainer.innerHTML = `
+        <img src="${getLogotipoUrl(dadosEstabelecimentoPerfil.logotipo)}" alt="Logo" class="rounded-circle" width="100" height="100" style="object-fit: cover;">
+      `;
+    } else {
+      previewLogoContainer.innerHTML = `
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px;">
+          <i class="bi bi-building text-white" style="font-size: 2.5rem;"></i>
+        </div>
+      `;
+    }
+  }
 }
 
 export function getPerfilContent() {
@@ -112,9 +149,10 @@ export function getPerfilContent() {
   const emailUsuario = userData?.email || "email@exemplo.com";
   const nomeUsuario = userData?.nome || "Usuário";
   
-  // Carregar dados do estabelecimento após renderizar
+  // Carregar dados do estabelecimento e fotos após renderizar
   setTimeout(() => {
     carregarDadosEstabelecimentoPerfil();
+    carregarFotos();
   }, 100);
   
   return `
@@ -199,8 +237,10 @@ export function getPerfilContent() {
               <h6 class="m-0 font-weight-bold text-primary">Preview do Perfil</h6>
             </div>
             <div class="card-body text-center">
-              <div class="mb-3">
-                <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="100" height="100">
+              <div class="mb-3" id="previewLogoContainer">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 100px; height: 100px;">
+                  <i class="bi bi-building text-white" style="font-size: 2.5rem;"></i>
+                </div>
               </div>
               <h5 id="previewNome">${nomeEstabelecimento}</h5>
               <p class="text-muted small" id="previewDescricao">Descrição não cadastrada</p>
@@ -256,6 +296,7 @@ export async function salvarPerfil() {
     const telefone = document.getElementById("empresaTelefone")?.value || "";
     const descricao = document.getElementById("empresaDescricao")?.value || "";
     const horarioStr = document.getElementById("empresaHorario")?.value || "";
+    const logotipoInput = document.getElementById("empresaLogo");
 
     // Converter horário de string para JSON se necessário
     let horarioFuncionamento = dadosEstabelecimentoPerfil.horario_funcionamento || {};
@@ -285,14 +326,30 @@ export async function salvarPerfil() {
       }
     });
 
-    // Atualizar estabelecimento
-    const estabelecimentoAtualizado = await estabelecimentosService.atualizar(
+    // Verificar se há logotipo selecionado
+    const logotipo = logotipoInput?.files?.[0] || null;
+
+    // Atualizar dados textuais primeiro
+    let estabelecimentoAtualizado = await estabelecimentosService.atualizar(
       dadosEstabelecimentoPerfil.id,
       dadosAtualizacao
     );
 
+    // Se há logotipo, atualizar em uma requisição separada
+    if (logotipo) {
+      estabelecimentoAtualizado = await estabelecimentosService.atualizarComLogotipo(
+        dadosEstabelecimentoPerfil.id,
+        logotipo
+      );
+    }
+
     // Atualizar dados locais
     dadosEstabelecimentoPerfil = estabelecimentoAtualizado;
+    
+    // Limpar input de arquivo
+    if (logotipoInput) {
+      logotipoInput.value = "";
+    }
     
     // Atualizar preview
     atualizarPreviewPerfil();
@@ -307,20 +364,188 @@ export async function salvarPerfil() {
   }
 }
 
-export function adicionarFoto() {
-  console.log("Adicionando foto...");
-  showNotification(
-    "Funcionalidade de adicionar fotos será implementada em breve",
-    "info"
-  );
+/**
+ * Constrói URL completa da foto
+ */
+function getFotoUrl(fotoPath) {
+  if (!fotoPath) return null;
+  if (fotoPath.startsWith('http://') || fotoPath.startsWith('https://')) {
+    return fotoPath;
+  }
+  const baseUrl = APP_CONFIG.apiUrl.replace('/api', '');
+  if (fotoPath.startsWith('/media/')) {
+    return `${baseUrl}${fotoPath}`;
+  }
+  if (fotoPath.startsWith('Fotos_Espaco/')) {
+    return `${baseUrl}/media/${fotoPath}`;
+  }
+  const mediaPath = fotoPath.startsWith('/') ? fotoPath : `/${fotoPath}`;
+  return `${baseUrl}/media${mediaPath}`;
 }
 
-export function removerFoto(id) {
-  console.log("Removendo foto:", id);
-  showNotification("Foto removida com sucesso!", "success");
+/**
+ * Carrega e exibe as fotos do estabelecimento
+ */
+async function carregarFotos() {
+  try {
+    const fotos = await fotosEspacoService.listar();
+    const galeriaContainer = document.getElementById("galeria-fotos");
+    
+    if (!galeriaContainer) return;
+    
+    const fotosArray = Array.isArray(fotos) ? fotos : fotos.results || [];
+    
+    if (fotosArray.length === 0) {
+      galeriaContainer.innerHTML = `
+        <div class="col-12 text-center py-4">
+          <i class="bi bi-images text-muted" style="font-size: 3rem;"></i>
+          <p class="text-muted mt-2">Nenhuma foto cadastrada</p>
+        </div>
+      `;
+      return;
+    }
+    
+    galeriaContainer.innerHTML = fotosArray.map(foto => `
+      <div class="col-4 col-md-3 mb-2">
+        <div class="position-relative">
+          <img src="${getFotoUrl(foto.foto)}" alt="Foto do estabelecimento" class="img-fluid rounded" style="aspect-ratio: 1; object-fit: cover; width: 100%;">
+          <button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" onclick="removerFoto(${foto.id})" style="padding: 0.15rem 0.4rem;">
+            <i class="bi bi-x" style="font-size: 0.8rem;"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error("Erro ao carregar fotos:", error);
+  }
+}
+
+/**
+ * Abre o modal para adicionar foto
+ */
+export function adicionarFoto() {
+  // Verificar se o modal já existe
+  let modalElement = document.getElementById("fotoModal");
+  
+  if (!modalElement) {
+    // Criar o modal
+    const modalHTML = `
+      <div class="modal fade" id="fotoModal" tabindex="-1" aria-labelledby="fotoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title" id="fotoModalLabel">
+                <i class="bi bi-camera me-2"></i>Adicionar Foto
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="novaFoto" class="form-label">Selecione a foto</label>
+                <input type="file" class="form-control" id="novaFoto" accept="image/*">
+              </div>
+              <div id="previewNovaFoto" class="text-center mb-3" style="display: none;">
+                <img src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-primary" onclick="salvarFoto()">
+                <i class="bi bi-upload me-1"></i>Enviar Foto
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+    modalElement = document.getElementById("fotoModal");
+    
+    // Adicionar listener para preview
+    const inputFoto = document.getElementById("novaFoto");
+    inputFoto?.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const previewDiv = document.getElementById("previewNovaFoto");
+      const previewImg = previewDiv?.querySelector("img");
+      
+      if (file && previewDiv && previewImg) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          previewImg.src = event.target.result;
+          previewDiv.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else if (previewDiv) {
+        previewDiv.style.display = "none";
+      }
+    });
+  }
+  
+  // Limpar input e preview
+  const inputFoto = document.getElementById("novaFoto");
+  const previewDiv = document.getElementById("previewNovaFoto");
+  if (inputFoto) inputFoto.value = "";
+  if (previewDiv) previewDiv.style.display = "none";
+  
+  // Abrir modal
+  const modal = new window.bootstrap.Modal(modalElement);
+  modal.show();
+}
+
+/**
+ * Salva a foto selecionada
+ */
+export async function salvarFoto() {
+  try {
+    const inputFoto = document.getElementById("novaFoto");
+    const foto = inputFoto?.files?.[0];
+    
+    if (!foto) {
+      showNotification("Selecione uma foto", "error");
+      return;
+    }
+    
+    await fotosEspacoService.criar(foto);
+    
+    // Fechar modal
+    const modalElement = document.getElementById("fotoModal");
+    if (modalElement) {
+      const modal = window.bootstrap.Modal.getInstance(modalElement);
+      modal?.hide();
+    }
+    
+    // Recarregar fotos
+    await carregarFotos();
+    
+    showNotification("Foto adicionada com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao salvar foto:", error);
+    showNotification(`Erro ao salvar foto: ${error.message || "Erro desconhecido"}`, "error");
+  }
+}
+
+/**
+ * Remove uma foto
+ */
+export async function removerFoto(id) {
+  if (!confirm("Tem certeza que deseja remover esta foto?")) {
+    return;
+  }
+  
+  try {
+    await fotosEspacoService.remover(id);
+    await carregarFotos();
+    showNotification("Foto removida com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro ao remover foto:", error);
+    showNotification(`Erro ao remover foto: ${error.message || "Erro desconhecido"}`, "error");
+  }
 }
 
 // Exportar para escopo global
 window.salvarPerfil = salvarPerfil;
 window.adicionarFoto = adicionarFoto;
+window.salvarFoto = salvarFoto;
 window.removerFoto = removerFoto;
+
