@@ -214,6 +214,15 @@ function atualizarExibicaoFuncionarios(funcionarios) {
     return;
   }
 
+  // Obter ID do usuário logado
+  let usuarioLogadoId = null;
+  try {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    usuarioLogadoId = userData.id;
+  } catch (e) {
+    console.error('Erro ao obter dados do usuário logado:', e);
+  }
+
   tbody.innerHTML = funcionarios.map(funcionario => {
     // O ID do administrador é o mesmo que o ID do usuario (PK = usuario_id)
     const id = funcionario.usuario?.id;
@@ -225,6 +234,26 @@ function atualizarExibicaoFuncionarios(funcionarios) {
     const isSuperUser = funcionario.super_user === true;
     const isAtivo = funcionario.usuario?.is_active === true;
     const dataCadastro = formatarData(funcionario.usuario?.created_at);
+
+    // Verificar se é o usuário logado
+    const isUsuarioLogado = id === usuarioLogadoId;
+
+    // Botões de ação (não mostrar para o usuário logado)
+    const botoesAcao = isUsuarioLogado 
+      ? ``
+      : `
+        <div class="btn-group" role="group">
+          <button class="btn btn-sm btn-outline-primary" onclick="editarFuncionario(${id})" title="Editar">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm ${isAtivo ? 'btn-outline-warning' : 'btn-outline-success'}" onclick="toggleStatusFuncionario(${id}, ${isAtivo})" title="${isAtivo ? 'Desativar' : 'Ativar'}">
+            <i class="bi bi-${isAtivo ? 'pause-fill' : 'play-fill'}"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusaoFuncionario(${id}, '${nomeEscapado}')" title="Excluir">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      `;
 
     return `
       <tr data-funcionario-id="${id}">
@@ -242,19 +271,7 @@ function atualizarExibicaoFuncionarios(funcionarios) {
           </span>
         </td>
         <td>${dataCadastro}</td>
-        <td>
-          <div class="btn-group" role="group">
-            <button class="btn btn-sm btn-outline-primary" onclick="editarFuncionario(${id})" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-sm ${isAtivo ? 'btn-outline-warning' : 'btn-outline-success'}" onclick="toggleStatusFuncionario(${id}, ${isAtivo})" title="${isAtivo ? 'Desativar' : 'Ativar'}">
-              <i class="bi bi-${isAtivo ? 'pause-fill' : 'play-fill'}"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusaoFuncionario(${id}, '${nomeEscapado}')" title="Excluir">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </td>
+        <td>${botoesAcao}</td>
       </tr>
     `;
   }).join('');

@@ -1,7 +1,10 @@
 import { apiService } from "../config/api.js";
 import { APP_CONFIG } from "../config/app.js";
 
-// Serviço de Autenticação
+/**
+ * Serviço de Autenticação
+ * Este frontend é exclusivo para administradores de estabelecimentos
+ */
 export class AuthService {
   constructor() {
     this.isAuthenticated = this.checkAuthStatus();
@@ -43,6 +46,15 @@ export class AuthService {
         // Busca dados do usuário
         const userData = await apiService.get(APP_CONFIG.authEndpoints.me);
 
+        // Verificar se é administrador (único tipo permitido neste frontend)
+        if (userData.tipo_usuario !== "ADMINISTRADOR") {
+          apiService.clearTokens();
+          return {
+            success: false,
+            message: "Acesso permitido apenas para administradores",
+          };
+        }
+
         // Salva estado de autenticação e dados do usuário
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userData", JSON.stringify(userData));
@@ -62,6 +74,7 @@ export class AuthService {
       };
     }
   }
+
   /**
    * Logout com blacklist do token
    */
@@ -80,7 +93,7 @@ export class AuthService {
       apiService.clearTokens();
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("userData");
-      localStorage.removeItem("currentPage"); // Limpar página salva ao fazer logout
+      localStorage.removeItem("currentPage");
 
       this.isAuthenticated = false;
       this.userData = null;
@@ -113,53 +126,28 @@ export class AuthService {
     }
   }
 
-  // Registrar novo usuário
-  async register(userData) {
-    try {
-      // Simular chamada à API (substituir por chamada real)
-      const response = await this.createUser(userData);
-
-      if (response.success) {
-        return { success: true, message: "Conta criada com sucesso!" };
-      } else {
-        return { success: false, message: response.message };
-      }
-    } catch (error) {
-      console.error("Erro no cadastro:", error);
-      return { success: false, message: "Erro interno do servidor" };
-    }
-  }
-
-  // Verificar se o usuário tem permissão para acessar uma página
+  /**
+   * Verificar se o usuário tem permissão para acessar uma página
+   * Páginas restritas a super_user (gerentes): funcionarios, auditoria
+   */
   hasPermission(page) {
     if (!this.isAuthenticated || !this.userData) {
       return false;
     }
 
-    const tipoUsuario = this.userData.tipo_usuario;
-    const isSuperUser = this.userData.super_user === true;
-
-    // Definir permissões por página baseado no tipo_usuario do backend
-    const permissions = {
-      dashboard: ["ADMINISTRADOR", "CLIENTE"],
-      perfil: ["ADMINISTRADOR", "CLIENTE"],
-      "meu-perfil": ["ADMINISTRADOR", "CLIENTE"],
-      catalogo: ["ADMINISTRADOR"],
-      anuncios: ["ADMINISTRADOR"],
-      transacoes: ["ADMINISTRADOR"],
-      funcionarios: ["ADMINISTRADOR"], // Apenas super_user na prática
-      metricas: ["ADMINISTRADOR"],
-      auditoria: ["ADMINISTRADOR"], // Apenas super_user
-    };
-
-    // Páginas restritas a super_user
-    const superUserOnly = ["funcionarios", "auditoria"];
-
-    if (superUserOnly.includes(page) && !isSuperUser) {
+    // Verificar se é administrador
+    if (this.userData.tipo_usuario !== "ADMINISTRADOR") {
       return false;
     }
 
-    return permissions[page] ? permissions[page].includes(tipoUsuario) : false;
+    // Páginas restritas a super_user (gerentes)
+    const superUserOnly = ["funcionarios", "auditoria"];
+
+    if (superUserOnly.includes(page) && !this.userData.super_user) {
+      return false;
+    }
+
+    return true;
   }
 
   // Obter token de autenticação
@@ -173,57 +161,11 @@ export class AuthService {
     if (!token) return false;
 
     try {
-      // Em produção, verificar se o token não expirou
       const tokenData = JSON.parse(atob(token.split(".")[1]));
       const now = Date.now() / 1000;
       return tokenData.exp > now;
     } catch (error) {
       return false;
-    }
-  }
-
-  // Simular criação de usuário (substituir por chamada real à API)
-  async createUser(userData) {
-    // Simular delay da API
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    try {
-      // Verificar se o e-mail já existe
-      const existingUsers = JSON.parse(
-        localStorage.getItem("registeredUsers") || "[]"
-      );
-      const emailExists = existingUsers.some(
-        (user) => user.email === userData.email
-      );
-
-      if (emailExists) {
-        return {
-          success: false,
-          message: "Este e-mail já está cadastrado",
-        };
-      }
-
-      // Criar novo usuário
-      const newUser = {
-        id: Date.now(),
-        ...userData,
-        createdAt: new Date().toISOString(),
-        status: "pending_approval",
-      };
-
-      // Salvar usuário (em produção, seria salvo no servidor)
-      existingUsers.push(newUser);
-      localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
-
-      return {
-        success: true,
-        message: "Conta criada com sucesso! Aguarde a aprovação.",
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: "Erro ao criar conta",
-      };
     }
   }
 
@@ -233,16 +175,6 @@ export class AuthService {
       this.userData = { ...this.userData, ...newData };
       localStorage.setItem("userData", JSON.stringify(this.userData));
     }
-  }
-
-  // Verificar se deve lembrar do usuário
-  shouldRememberUser() {
-    return localStorage.getItem("rememberMe") === "true";
-  }
-
-  // Obter e-mail salvo para "lembrar de mim"
-  getRememberedEmail() {
-    return localStorage.getItem("userEmail") || "";
   }
 }
 
@@ -277,3 +209,4 @@ export function logout() {
 // Exportar funções para uso global
 window.requireAuth = requireAuth;
 window.logout = logout;
+
