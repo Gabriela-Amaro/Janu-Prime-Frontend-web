@@ -82,6 +82,11 @@ function atualizarPreviewPerfil() {
     previewNome.textContent = dadosEstabelecimentoPerfil.nome || "Nome do Estabelecimento";
   }
 
+  const previewDescricao = document.getElementById("previewDescricao");
+  if (previewDescricao) {
+    previewDescricao.textContent = dadosEstabelecimentoPerfil.descricao || "Descrição não cadastrada";
+  }
+
   const previewEndereco = document.getElementById("previewEndereco");
   if (previewEndereco) {
     previewEndereco.textContent = dadosEstabelecimentoPerfil.endereco || "Endereço não cadastrado";
@@ -198,9 +203,10 @@ export function getPerfilContent() {
                 <img src="/assets/images/logo.svg" alt="Logo" class="rounded-circle" width="100" height="100">
               </div>
               <h5 id="previewNome">${nomeEstabelecimento}</h5>
-              <p class="text-muted small">${nomeUsuario} - ${userData?.tipo_usuario || "Administrador"}</p>
-              <p class="text-muted" id="previewEndereco">Endereço não cadastrado</p>
-              <p class="text-muted" id="previewHorario">Horário não cadastrado</p>
+              <p class="text-muted small" id="previewDescricao">Descrição não cadastrada</p>
+              <hr class="my-2">
+              <p class="text-muted small mb-1" id="previewEndereco"><i class="bi bi-geo-alt me-1"></i>Endereço não cadastrado</p>
+              <p class="text-muted small" id="previewHorario"><i class="bi bi-clock me-1"></i>Horário não cadastrado</p>
             </div>
           </div>
           

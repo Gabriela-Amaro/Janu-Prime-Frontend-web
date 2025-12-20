@@ -54,12 +54,14 @@
                 <li><a class="dropdown-item" href="#" onclick="showPage('funcionarios')">
                     <i class="bi bi-people me-2"></i>Gerenciar Funcionários
                   </a></li>
+                <!-- Temporariamente desabilitado
                 <li><a class="dropdown-item" href="#" onclick="showPage('metricas')">
                     <i class="bi bi-graph-up me-2"></i>Métricas da Empresa
                   </a></li>
                 <li><a class="dropdown-item" href="#" onclick="showPage('auditoria')">
                     <i class="bi bi-journal-text me-2"></i>Registros de Auditoria
                   </a></li>
+                -->
               </ul>
             </li>
             <li class="nav-item">
@@ -103,14 +105,8 @@
               <label for="produtoPreco" class="form-label">Preço do Produto</label>
               <div class="input-group">
                 <span class="input-group-text">R$</span>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="produtoPreco" 
-                  placeholder="0,00"
-                  oninput="formatCurrency(this)"
-                  required
-                >
+                <input type="text" class="form-control" id="produtoPreco" placeholder="0,00"
+                  oninput="formatCurrency(this)" required>
               </div>
               <small class="text-muted">O sistema calculará os pontos automaticamente baseado no preço</small>
             </div>
@@ -151,14 +147,8 @@
             </div>
             <div class="mb-3">
               <label for="funcionarioCpf" class="form-label">CPF</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="funcionarioCpf" 
-                placeholder="000.000.000-00"
-                oninput="formatCPF(this)"
-                required
-              >
+              <input type="text" class="form-control" id="funcionarioCpf" placeholder="000.000.000-00"
+                oninput="formatCPF(this)" required>
             </div>
             <div class="mb-3">
               <label for="funcionarioEmail" class="form-label">E-mail</label>
@@ -167,19 +157,10 @@
             <div class="mb-3">
               <label for="funcionarioSenha" class="form-label">Senha</label>
               <div class="input-group">
-                <input 
-                  type="password" 
-                  class="form-control" 
-                  id="funcionarioSenha" 
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                  minlength="6"
-                >
-                <button 
-                  class="btn btn-outline-secondary" 
-                  type="button" 
-                  onclick="togglePasswordVisibility('funcionarioSenha')"
-                >
+                <input type="password" class="form-control" id="funcionarioSenha" placeholder="Mínimo 6 caracteres"
+                  required minlength="6">
+                <button class="btn btn-outline-secondary" type="button"
+                  onclick="togglePasswordVisibility('funcionarioSenha')">
                   <i class="bi bi-eye" id="funcionarioSenhaIcon"></i>
                 </button>
               </div>
@@ -187,19 +168,10 @@
             <div class="mb-3">
               <label for="funcionarioConfirmarSenha" class="form-label">Confirmar Senha</label>
               <div class="input-group">
-                <input 
-                  type="password" 
-                  class="form-control" 
-                  id="funcionarioConfirmarSenha" 
-                  placeholder="Digite a senha novamente"
-                  required
-                  minlength="6"
-                >
-                <button 
-                  class="btn btn-outline-secondary" 
-                  type="button" 
-                  onclick="togglePasswordVisibility('funcionarioConfirmarSenha')"
-                >
+                <input type="password" class="form-control" id="funcionarioConfirmarSenha"
+                  placeholder="Digite a senha novamente" required minlength="6">
+                <button class="btn btn-outline-secondary" type="button"
+                  onclick="togglePasswordVisibility('funcionarioConfirmarSenha')">
                   <i class="bi bi-eye" id="funcionarioConfirmarSenhaIcon"></i>
                 </button>
               </div>
