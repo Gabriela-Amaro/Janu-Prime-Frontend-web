@@ -182,8 +182,7 @@ export function getPerfilContent() {
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaCnpj" class="form-label">CNPJ</label>
-                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00" readonly>
-                      <small class="text-muted">CNPJ não pode ser alterado</small>
+                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
                     </div>
                   </div>
                 </div>

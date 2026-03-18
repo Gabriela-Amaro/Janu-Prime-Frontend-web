@@ -51,14 +51,18 @@ function preencherFormulario() {
   const cpfInput = document.getElementById("meuPerfilCpf");
   if (cpfInput) cpfInput.value = formatarCPF(dadosUsuario.cpf) || "";
 
-  const estabelecimentoInput = document.getElementById("meuPerfilEstabelecimento");
+  const estabelecimentoInput = document.getElementById(
+    "meuPerfilEstabelecimento",
+  );
   if (estabelecimentoInput) {
     estabelecimentoInput.value = dadosUsuario.estabelecimento?.nome || "";
   }
 
   const tipoUsuarioInput = document.getElementById("meuPerfilTipoUsuario");
   if (tipoUsuarioInput) {
-    tipoUsuarioInput.value = dadosUsuario.super_user ? "Gerente" : "Funcionário";
+    tipoUsuarioInput.value = dadosUsuario.super_user
+      ? "Gerente"
+      : "Funcionário";
   }
 }
 
@@ -111,7 +115,10 @@ export async function salvarMeuPerfil() {
     }
   } catch (error) {
     console.error("Erro ao salvar perfil:", error);
-    showNotification(`Erro ao salvar perfil: ${error.message || "Erro desconhecido"}`, "error");
+    showNotification(
+      `Erro ao salvar perfil: ${error.message || "Erro desconhecido"}`,
+      "error",
+    );
   }
 }
 
@@ -136,7 +143,10 @@ export async function alterarSenha() {
     }
 
     if (novaSenha.length < 8) {
-      showNotification("A nova senha deve ter pelo menos 8 caracteres", "error");
+      showNotification(
+        "A nova senha deve ter pelo menos 8 caracteres",
+        "error",
+      );
       return;
     }
 
@@ -155,12 +165,15 @@ export async function alterarSenha() {
     showNotification("Senha alterada com sucesso!", "success");
   } catch (error) {
     console.error("Erro ao alterar senha:", error);
-    
+
     // Tratar erros específicos
     if (error.message?.includes("400")) {
       showNotification("Senha atual incorreta ou nova senha inválida", "error");
     } else {
-      showNotification(`Erro ao alterar senha: ${error.message || "Erro desconhecido"}`, "error");
+      showNotification(
+        `Erro ao alterar senha: ${error.message || "Erro desconhecido"}`,
+        "error",
+      );
     }
   }
 }
@@ -204,24 +217,23 @@ export function getMeuPerfilContent() {
                 
                 <div class="mb-3">
                   <label for="meuPerfilEmail" class="form-label">E-mail</label>
-                  <input type="email" class="form-control" id="meuPerfilEmail" readonly>
-                  <small class="text-muted">O e-mail não pode ser alterado</small>
+                  <input type="email" class="form-control" id="meuPerfilEmail" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
                 </div>
                 
                 <div class="mb-3">
                   <label for="meuPerfilCpf" class="form-label">CPF</label>
-                  <input type="text" class="form-control" id="meuPerfilCpf" readonly>
-                  <small class="text-muted">O CPF não pode ser alterado</small>
+                  <input type="text" class="form-control" id="meuPerfilCpf" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
                 </div>
                 
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label for="meuPerfilEstabelecimento" class="form-label">Estabelecimento</label>
-                    <input type="text" class="form-control" id="meuPerfilEstabelecimento" readonly>
+                    <input type="text" class="form-control" id="meuPerfilEstabelecimento" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
+
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="meuPerfilTipoUsuario" class="form-label">Tipo de Acesso</label>
-                    <input type="text" class="form-control" id="meuPerfilTipoUsuario" readonly>
+                    <input type="text" class="form-control" id="meuPerfilTipoUsuario" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
                   </div>
                 </div>
                 
