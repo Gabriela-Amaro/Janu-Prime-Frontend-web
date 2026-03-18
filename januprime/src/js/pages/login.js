@@ -69,15 +69,7 @@ export function getLoginContent() {
                 </div>
               </form>
               
-              <hr class="my-4">
-              
-              <div class="text-center">
-                <p class="text-muted mb-0">Não tem uma conta?</p>
-                <button class="btn btn-outline-primary mt-2" onclick="showPage('register')">
-                  <i class="bi bi-person-plus me-2"></i>
-                  Criar conta
-                </button>
-              </div>
+
         </div>
       </div>
     </div>

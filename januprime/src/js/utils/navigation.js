@@ -13,7 +13,7 @@ export function showPage(pageName) {
   }
   
   // Se for página de auth e usuário já estiver logado, redirecionar para dashboard
-  if ((['login', 'register', 'forgot-password'].includes(pageName)) && typeof authService !== 'undefined' && authService.isAuthenticated) {
+  if ((['login', 'forgot-password'].includes(pageName)) && typeof authService !== 'undefined' && authService.isAuthenticated) {
     showPage('dashboard');
     return;
   }
@@ -21,7 +21,7 @@ export function showPage(pageName) {
   // Salvar página atual no localStorage (apenas para páginas protegidas)
   if (protectedPages.includes(pageName)) {
     localStorage.setItem('currentPage', pageName);
-  } else if (['login', 'register', 'forgot-password'].includes(pageName)) {
+  } else if (['login', 'forgot-password'].includes(pageName)) {
     // Limpar página salva ao acessar páginas de autenticação
     localStorage.removeItem('currentPage');
   }
@@ -37,7 +37,7 @@ export function showPage(pageName) {
   });
   
   // Adiciona classe ativa ao link atual (apenas se não for página de auth)
-  if (!['login', 'register', 'forgot-password'].includes(pageName)) {
+  if (!['login', 'forgot-password'].includes(pageName)) {
     const activeLink = document.querySelector(`[onclick="showPage('${pageName}')"]`);
     if (activeLink) {
       activeLink.classList.add('active');
@@ -88,8 +88,7 @@ function getPageContent(pageName) {
   switch (pageName) {
     case 'login':
       return getLoginContent();
-    case 'register':
-      return getRegisterContent();
+
     case 'forgot-password':
       return getForgotPasswordContent();
     case 'dashboard':
@@ -117,7 +116,7 @@ function getPageContent(pageName) {
 
 // Importar funções de geração de conteúdo das páginas
 import { getLoginContent } from '../pages/login.js';
-import { getRegisterContent } from '../pages/register.js';
+
 import { getForgotPasswordContent } from '../pages/forgot-password.js';
 import { getDashboardContent } from '../pages/dashboard.js';
 import { getPerfilContent } from '../pages/perfil.js';

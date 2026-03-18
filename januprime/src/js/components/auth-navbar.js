@@ -95,7 +95,7 @@ export function getAuthFooter() {
             <h6 class="footer-title mb-2">Navegação</h6>
             <ul class="footer-links">
               <li><a href="#" onclick="showPage('login')" class="text-muted">Login</a></li>
-              <li><a href="#" onclick="showPage('register')" class="text-muted">Cadastro</a></li>
+
               <li><a href="#" onclick="showPage('forgot-password')" class="text-muted">Recuperar Senha</a></li>
               <li><a href="#" class="text-muted">Sobre Nós</a></li>
               <li><a href="#" class="text-muted">Blog</a></li>
