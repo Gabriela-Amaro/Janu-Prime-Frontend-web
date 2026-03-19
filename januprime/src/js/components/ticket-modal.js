@@ -27,17 +27,17 @@ function gerarConteudoCredito(ticket) {
   const imagemNota = imagemUrl
     ? `
     <div class="col-lg-5 mb-3 mb-lg-0">
-      <div class="card h-100 bg-dark">
-        <div class="card-header bg-secondary py-2">
-          <h6 class="mb-0 text-white"><i class="bi bi-image me-2"></i>Imagem da Nota Fiscal</h6>
+      <div class="card h-100 bg-light border">
+        <div class="card-header bg-light py-2 border-bottom">
+          <h6 class="mb-0 text-dark"><i class="bi bi-image me-2"></i>Imagem da Nota Fiscal</h6>
         </div>
         <div class="card-body p-2 d-flex align-items-center justify-content-center">
           <a href="${imagemUrl}" target="_blank" title="Clique para ampliar">
             <img src="${imagemUrl}" alt="Nota Fiscal" class="img-fluid rounded" style="width: 100%; cursor: zoom-in;">
           </a>
         </div>
-        <div class="card-footer text-center py-2">
-          <a href="${imagemUrl}" target="_blank" class="btn btn-sm btn-outline-light">
+        <div class="card-footer bg-light text-center py-2 border-top">
+          <a href="${imagemUrl}" target="_blank" class="btn btn-sm btn-outline-dark">
             <i class="bi bi-arrows-fullscreen me-1"></i>Abrir em Nova Aba
           </a>
         </div>
@@ -46,7 +46,7 @@ function gerarConteudoCredito(ticket) {
   `
     : `
     <div class="col-lg-5 mb-3 mb-lg-0">
-      <div class="card h-100 bg-secondary">
+      <div class="card h-100 bg-light border border-light">
         <div class="card-body d-flex flex-column align-items-center justify-content-center text-muted" style="min-height: 300px;">
           <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
           <p class="mt-2 mb-0">Nenhuma imagem enviada</p>
@@ -157,20 +157,20 @@ function gerarConteudoDebito(ticket) {
     <div class="row">
       <!-- Card do Produto -->
       <div class="col-lg-5 mb-3 mb-lg-0">
-        <div class="card h-100 bg-dark">
-          <div class="card-header bg-secondary py-2">
-            <h6 class="mb-0 text-white"><i class="bi bi-gift me-2"></i>Produto Solicitado</h6>
+        <div class="card h-100 bg-light border">
+          <div class="card-header bg-light border-bottom py-2">
+            <h6 class="mb-0 text-dark"><i class="bi bi-gift me-2"></i>Produto Solicitado</h6>
           </div>
           <div class="card-body d-flex flex-column align-items-center justify-content-center text-center p-3" style="min-height: 280px;">
             ${imagemProdutoUrl
               ? `<img src="${imagemProdutoUrl}" alt="${ticket.nome_produto || 'Produto'}" class="img-fluid rounded mb-3" style="max-height: 150px; object-fit: contain;">`
-              : `<div class="d-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; background-color: rgba(255,255,255,0.1); border-radius: 8px;">
+              : `<div class="d-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px; background-color: rgba(0,0,0,0.05); border-radius: 8px;">
                   <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
                 </div>`
             }
-            <h4 class="mb-2 text-white">${ticket.nome_produto || "Produto"}</h4>
-            <div class="rounded-pill px-4 py-2 mt-2" style="background-color: rgba(148, 163, 184, 0.3);">
-              <span class="text-white fw-bold fs-5">
+            <h4 class="mb-2 text-dark">${ticket.nome_produto || "Produto"}</h4>
+            <div class="rounded-pill px-4 py-2 mt-2" style="background-color: rgba(15, 23, 42, 0.1);">
+              <span class="text-dark fw-bold fs-5">
                 <i class="bi bi-dash-circle me-1"></i>${ticket.pontos} pontos
               </span>
             </div>
@@ -273,8 +273,8 @@ export function gerarTicketModalHTML(ticket, tipo, options = {}) {
     <div class="modal fade" id="${modalId}" tabindex="-1" aria-labelledby="${modalId}Label" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header bg-${tipo === "credito" ? "success" : "warning"} text-white">
-            <h5 class="modal-title" id="${modalId}Label">
+          <div class="modal-header ${tipo === "credito" ? "bg-success text-white" : "text-white"}" style="${tipo === "credito" ? "" : "background-color: var(--warning-color);"}">
+            <h5 class="modal-title text-white" id="${modalId}Label">
               <i class="bi bi-ticket-perforated me-2"></i>
               Ticket ${tipo === "credito" ? "de Crédito" : "de Débito"} #${ticket.codigo || ticket.id}
             </h5>
@@ -282,7 +282,7 @@ export function gerarTicketModalHTML(ticket, tipo, options = {}) {
           </div>
           <div class="modal-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-${tipo === "credito" ? "success" : "warning"} fs-6">
+              <span class="${tipo === "credito" ? "badge bg-success fs-6" : "badge fs-6 text-white"}" style="${tipo === "credito" ? "" : "background-color: #ffc107; color: white !important;"}">
                 ${tipo === "credito" ? "Crédito de Pontos" : "Resgate de Produto"}
               </span>
               <span class="badge bg-info fs-6">

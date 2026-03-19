@@ -635,7 +635,7 @@ export function getDashboardContent() {
         <!-- Tickets de Débito (Resgates) -->
         <div class="col-lg-4 mb-4">
           <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center bg-warning bg-opacity-10 py-2">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
               <h6 class="m-0 font-weight-bold text-warning small">
                 <i class="bi bi-cart-check me-1"></i>Resgates (Débito)
                 <span class="badge bg-warning text-white ms-1" id="contador-debito">0</span>
@@ -662,7 +662,7 @@ export function getDashboardContent() {
         <!-- Tickets de Crédito (Notas Fiscais) -->
         <div class="col-lg-4 mb-4">
           <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center bg-success bg-opacity-10 py-2">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
               <h6 class="m-0 font-weight-bold text-success small">
                 <i class="bi bi-receipt me-1"></i>Notas Fiscais (Crédito)
                 <span class="badge bg-success ms-1" id="contador-credito">0</span>

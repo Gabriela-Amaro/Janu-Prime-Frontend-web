@@ -58,7 +58,7 @@ export function getTransacoesContent() {
     carregarTransacoes();
   }, 100);
   return `
-    <div class="container-fluid">
+    <div class="container-fluid mb-5">
       <div class="row mb-4">
         <div class="col-12">
           <h1 class="text-gradient mb-0">Transações</h1>

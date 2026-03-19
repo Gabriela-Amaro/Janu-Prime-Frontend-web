@@ -222,7 +222,7 @@ function atualizarExibicaoAnuncios(anuncios) {
                 ${isExpirado ? 'Expirado' : 'Ativo'}
               </span>
             </div>
-            <div class="text-muted small mb-2">
+            <div class="text-muted mb-2" style="font-size: 0.95rem;">
               <div class="mb-1">
                 <strong><i class="bi bi-calendar-event me-1"></i>Expira em:</strong><br>
                 ${dataExpiracao.toLocaleDateString('pt-BR')} ${dataExpiracao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}

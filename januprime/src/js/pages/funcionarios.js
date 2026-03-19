@@ -64,7 +64,7 @@ export function getFuncionariosContent() {
   }, 100);
 
   return `
-    <div class="container-fluid">
+    <div class="container-fluid mb-5">
       <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
           <div>
@@ -378,12 +378,12 @@ export function prepararNovoFuncionario() {
   const emailInput = document.getElementById('funcionarioEmail');
   if (cpfInput) {
     cpfInput.readOnly = false;
-    cpfInput.classList.remove('text-muted', 'bg-dark');
+    cpfInput.classList.remove('text-muted', 'bg-light', 'border');
     cpfInput.style.opacity = '1';
   }
   if (emailInput) {
     emailInput.readOnly = false;
-    emailInput.classList.remove('text-muted', 'bg-dark');
+    emailInput.classList.remove('text-muted', 'bg-light', 'border');
     emailInput.style.opacity = '1';
   }
   
@@ -432,7 +432,7 @@ export async function editarFuncionario(id) {
     // Desabilitar campos de CPF e email (não editáveis)
     if (cpfInput) {
       cpfInput.readOnly = true;
-      cpfInput.classList.add('text-muted', 'bg-dark');
+      cpfInput.classList.add('text-muted', 'bg-light', 'border');
       cpfInput.style.opacity = '0.6';
       cpfInput.style.cursor = 'not-allowed';
       
@@ -447,7 +447,7 @@ export async function editarFuncionario(id) {
     }
     if (emailInput) {
       emailInput.readOnly = true;
-      emailInput.classList.add('text-muted', 'bg-dark');
+      emailInput.classList.add('text-muted', 'bg-light', 'border');
       emailInput.style.opacity = '0.6';
       emailInput.style.cursor = 'not-allowed';
       

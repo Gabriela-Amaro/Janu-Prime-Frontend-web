@@ -156,7 +156,7 @@ export function getPerfilContent() {
   }, 100);
   
   return `
-    <div class="container-fluid">
+    <div class="container-fluid mb-5">
       <div class="row mb-4">
         <div class="col-12">
           <h1 class="text-gradient mb-0">Perfil da Empresa</h1>
@@ -182,7 +182,8 @@ export function getPerfilContent() {
                   <div class="col-md-6">
                     <div class="mb-3">
                       <label for="empresaCnpj" class="form-label">CNPJ</label>
-                      <input type="text" class="form-control" id="empresaCnpj" placeholder="00.000.000/0000-00" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
+                      <input type="text" class="form-control text-muted bg-light border" id="empresaCnpj" placeholder="00.000.000/0000-00" readonly disabled style="cursor: not-allowed; opacity: 0.6;">
+                      <small class="text-muted d-block mt-1"><i class="bi bi-lock me-1"></i>Este campo não pode ser alterado</small>
                     </div>
                   </div>
                 </div>
@@ -433,7 +434,7 @@ export function adicionarFoto() {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-              <h5 class="modal-title" id="fotoModalLabel">
+              <h5 class="modal-title text-white" id="fotoModalLabel">
                 <i class="bi bi-camera me-2"></i>Adicionar Foto
               </h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>

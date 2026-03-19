@@ -332,15 +332,15 @@ function atualizarExibicaoProdutos(produtos) {
           </div>
           <div class="card-body d-flex flex-column" style="padding: 1rem;">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="card-title mb-0" style="font-size: 0.95rem; font-weight: 600;">${produto.nome}</h6>
+              <h5 class="card-title mb-0 text-dark" style="font-size: 1.15rem; font-weight: 700;">${produto.nome}</h5>
               <span class="badge ${produto.ativo ? 'bg-success' : 'bg-secondary'}" style="font-size: 0.7rem;">
                 ${produto.ativo ? 'Ativo' : 'Inativo'}
               </span>
             </div>
-            <p class="card-text text-muted small flex-grow-1" style="min-height: 35px; font-size: 0.8rem; margin-bottom: 0.75rem;">${descricao}</p>
+            <p class="card-text text-muted flex-grow-1" style="min-height: 35px; font-size: 0.95rem; margin-bottom: 0.75rem;">${descricao}</p>
             <div class="d-flex justify-content-between align-items-center mt-auto">
-              <span class="fw-bold text-white mb-0" style="font-size: 1rem; color: #ffffff !important;">
-                <i class="bi bi-star-fill text-warning me-1" style="color: #fbbf24 !important;"></i>${pontos} pontos
+              <span class="fw-bold text-dark mb-0" style="font-size: 1rem;">
+                <i class="bi bi-star-fill text-warning me-1"></i>${pontos} pontos
               </span>
               <div>
                 <button class="btn btn-sm btn-outline-primary me-1" onclick="editarProduto(${produto.id})" title="Editar" style="padding: 0.25rem 0.5rem;">

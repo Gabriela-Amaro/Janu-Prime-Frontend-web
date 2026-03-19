@@ -217,23 +217,26 @@ export function getMeuPerfilContent() {
                 
                 <div class="mb-3">
                   <label for="meuPerfilEmail" class="form-label">E-mail</label>
-                  <input type="email" class="form-control" id="meuPerfilEmail" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
+                  <input type="email" class="form-control text-muted bg-light border" id="meuPerfilEmail" readonly disabled style="cursor: not-allowed; opacity: 0.6;">
+                  <small class="text-muted d-block mt-1"><i class="bi bi-lock me-1"></i>Este campo não pode ser alterado</small>
                 </div>
                 
                 <div class="mb-3">
                   <label for="meuPerfilCpf" class="form-label">CPF</label>
-                  <input type="text" class="form-control" id="meuPerfilCpf" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
+                  <input type="text" class="form-control text-muted bg-light border" id="meuPerfilCpf" readonly disabled style="cursor: not-allowed; opacity: 0.6;">
+                  <small class="text-muted d-block mt-1"><i class="bi bi-lock me-1"></i>Este campo não pode ser alterado</small>
                 </div>
                 
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label for="meuPerfilEstabelecimento" class="form-label">Estabelecimento</label>
-                    <input type="text" class="form-control" id="meuPerfilEstabelecimento" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
-
+                    <input type="text" class="form-control text-muted bg-light border" id="meuPerfilEstabelecimento" readonly disabled style="cursor: not-allowed; opacity: 0.6;">
+                    <small class="text-muted d-block mt-1"><i class="bi bi-lock me-1"></i>Este campo não pode ser alterado</small>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label for="meuPerfilTipoUsuario" class="form-label">Tipo de Acesso</label>
-                    <input type="text" class="form-control" id="meuPerfilTipoUsuario" readonly disabled style="cursor: not-allowed; opacity: 0.5;">
+                    <input type="text" class="form-control text-muted bg-light border" id="meuPerfilTipoUsuario" readonly disabled style="cursor: not-allowed; opacity: 0.6;">
+                    <small class="text-muted d-block mt-1"><i class="bi bi-lock me-1"></i>Este campo não pode ser alterado</small>
                   </div>
                 </div>
                 
